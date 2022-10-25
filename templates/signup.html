@@ -48,40 +48,53 @@
     <body class="text-center">
     
 
-      {% comment %} LOGIN {% endcomment %}
+      {% comment %} Signup {% endcomment %}
       <main class="container form-signin w-100 m-auto my-4">
-        <form method="post" action="/login">
+        <form method="post" action="/signup">
         {% csrf_token %}
           <img class="mb-4 mt-5 mt-5" src="/static/user_logo.png" alt="" width="72" height="57">
-          <h1 class="h3 mb-3 fw-normal">Welcome to Hospital Manager</h1>
-      
-          {% comment %} <div class="form-floating">
-            <input type="email" class="form-control" id="floatingInput" placeholder="name@example.com">
+          <h1 class="h3 mb-3 fw-normal">Create new User</h1>
+          <div class="form-floating">
+            <input type="text" class="form-control" id="floatingInput" required name="name" placeholder="Your Name">
+            <label for="floatingInput">Enter your name</label>
+          </div>
+          <div class="form-floating">
+            <input type="address" class="form-control" id="floatingInput" required name="address" placeholder="Address">
+            <label for="floatingInput">Enter your address</label>
+          </div>
+          <div class="form-floating">
+            <input type="email" class="form-control" id="floatingInput" name="email" placeholder="name@example.com">
             <label for="floatingInput">Email address</label>
           </div>
           <div class="form-floating">
-            <input type="password" class="form-control" id="floatingPassword" placeholder="Password">
+            <input type="number" required class="form-control" id="floatingInput" name="phone" placeholder="Enter phone number">
+            <label for="floatingInput">Contact(+91)</label>
+          </div>
+          <label class="form-label" name="dp" for="customFile"></label>
+            <input type="file" class="form-control" name="dp" id="dp" />
+          <label></label>
+          <div class="form-floating">
+            <input type="password" class="form-control" name="password" id="floatingPassword" placeholder="Password">
             <label for="floatingPassword">Password</label>
-          </div> {% endcomment %}
-      
+          </div>
+          <label></label>
           {% comment %} <div class="checkbox mb-3">
             <label>
               <input type="checkbox" value="remember-me"> Remember me
             </label>
           </div> {% endcomment %}
-          <button class="w-50 btn btn-lg btn-primary my-4" type="submit">Login</button>
-        </form>
-        <form method="post" action="/signup">
-          {% csrf_token %}
-          <button class="w-50 btn btn-lg btn-primary my-4" type="submit">Sign up</button>
+          <select class="form-select" aria-label="Default select example" name="userType">
+            <option selected>Select Type of User</option>
+            <option value="Patient">Patient</option>
+            <option value="Doctor">Doctor</option>
+            <option value="Organization">Organization</option>
+          </select>
+
+          <button class="w-50 btn btn-lg btn-primary my-4" name="submitButton" type="submit">Sign up</button>
           <p class="mt-5 mb-3 text-muted">© 2022–2023</p>
         </form>
       </main>
       {% comment %} Login end {% endcomment %}
-      
-          
-        
-      
       </body>
   
   
