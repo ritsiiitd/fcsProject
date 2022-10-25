@@ -20,7 +20,7 @@
             </li>
             <li class="nav-item">
               <a class="nav-link" href="#">Link</a>
-            </li>
+            </li> 
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Dropdown
@@ -50,26 +50,29 @@
 
       {% comment %} LOGIN {% endcomment %}
       <main class="container form-signin w-100 m-auto my-4">
-        <form>
-          <img class="mb-4" src="/static/bootstrap-logo.png" alt="" width="72" height="57">
-          <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+        <form method="post" action="/login">
+        {% csrf_token %}
+          <img class="mb-4 mt-5 mt-5" src="/static/user_logo.png" alt="" width="72" height="57">
+          <h1 class="h3 mb-3 fw-normal">Welcome to Hospital Manager</h1>
       
-          <div class="form-floating">
+          {% comment %} <div class="form-floating">
             <input type="email" class="form-control" id="floatingInput" placeholder="name@example.com">
             <label for="floatingInput">Email address</label>
           </div>
           <div class="form-floating">
             <input type="password" class="form-control" id="floatingPassword" placeholder="Password">
             <label for="floatingPassword">Password</label>
-          </div>
+          </div> {% endcomment %}
       
           {% comment %} <div class="checkbox mb-3">
             <label>
               <input type="checkbox" value="remember-me"> Remember me
             </label>
           </div> {% endcomment %}
-          <button class="w-50 btn btn-lg btn-primary my-4" type="submit">Sign in</button>
-          <p class="mt-5 mb-3 text-muted">© 2017–2022</p>
+          <button class="w-50 btn btn-lg btn-primary my-4" type="submit">Login</button>
+        
+          <button class="w-50 btn btn-lg btn-primary my-4" type="submit">Sign up</button>
+          <p class="mt-5 mb-3 text-muted">© 2022–2023</p>
         </form>
       </main>
       {% comment %} Login end {% endcomment %}
