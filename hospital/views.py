@@ -1,12 +1,13 @@
 from datetime import datetime
 from django.shortcuts import redirect, render
 from django.contrib.auth.models import User
-from django.contrib.auth import logout,login,authenticate
+from django.contrib.auth import logout,login,authenticate,get_user_model
 from numpy import empty
 from hospital.models import Patient
 #create_user() in signup
 patientCount = 0
 # Create your views here.
+
 def index(request):
     return render(request,'login_signup.html')
 
@@ -25,7 +26,10 @@ def loginUser(request):
         user = authenticate(username=username, password=password)
         if user is not None:
             login(request,user)
-            return redirect("/mainpage")
+            if user.is_superuser == 1:
+                return redirect("/adminPage")
+            else:
+                return redirect("/mainpage")
         else:
             return render(request, 'login.html')
     return render(request, 'login.html')
@@ -54,10 +58,32 @@ def logoutUser(request):
     logout(request)
     return redirect("/login")
 
+def getLoggedinPatient(request,context):
+    for i in Patient.objects.all():
+            print(type(request.user.username))
+            if(str(i.mobile)==request.user.username):
+                context['loggedinPatient'] = i
+    return context
+
+
 def mainpage(request):
-    print(request.user)
+    # print(request.user)
     if request.user.is_anonymous:
         return redirect("/login")
     else:
-        print(request.user.name)
-    return render(request, 'mainpage.html')
+        
+        context = {
+            'loggedinPatient' : 'NULL'
+        }
+        context = getLoggedinPatient(request,context)
+                
+    return render(request, 'mainpage.html', context)
+
+
+def adminPage(request):
+    context = {
+            'loggedinPatient' : 'NULL',
+            'allUsers' : get_user_model().objects.all().values()
+        }
+    context = getLoggedinPatient(request,context)
+    return render(request,'admin.html',context)
