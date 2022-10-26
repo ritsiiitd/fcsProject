@@ -60,7 +60,6 @@ def logoutUser(request):
 
 def getLoggedinPatient(request,context):
     for i in Patient.objects.all():
-            print(type(request.user.username))
             if(str(i.mobile)==request.user.username):
                 context['loggedinPatient'] = i
     return context
@@ -79,11 +78,47 @@ def mainpage(request):
                 
     return render(request, 'mainpage.html', context)
 
+def countPatients(request,context):
+    context['numPatients'] = Patient.objects.all().count()
+    return context
 
 def adminPage(request):
     context = {
             'loggedinPatient' : 'NULL',
-            'allUsers' : get_user_model().objects.all().values()
+            'allUsers' : get_user_model().objects.all().values(),
+            'numPatients' : 0
         }
+    
+    context = countPatients(request,context)
     context = getLoggedinPatient(request,context)
+    
     return render(request,'admin.html',context)
+
+def adminPatient(request):
+    if(request.method=="POST"):
+        for keys in request.POST:
+            print((keys))
+            if(keys=='verifyPatient'):
+                patientUsername = request.POST[keys]
+                patientModel = Patient.objects.get(mobile=patientUsername)
+                print(patientModel.verified)
+                patientModel.verified = True
+                # patientUser = get_user_model().objects.get(username=patientUsername)
+                # print(patientUser)
+                patientModel.save()
+            if(keys=='deletePatient'):
+                patientUsername = request.POST[keys]
+                patientModel = Patient.objects.get(mobile=patientUsername)
+                patientUser = get_user_model().objects.get(username=patientUsername)
+                patientModel.delete()
+                patientUser.delete()
+
+    context = {
+            'loggedinPatient' : 'NULL',
+            'numPatients' : 0,
+            'patientList' : Patient.objects.all().values()
+        }
+    context = countPatients(request,context)
+    context = getLoggedinPatient(request,context)
+    
+    return render(request,'adminPatient.html',context)

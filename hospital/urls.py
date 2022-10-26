@@ -6,8 +6,9 @@ urlpatterns = [
     path("", views.index, name = 'home'),
     path("login", views.loginUser, name="login"),
     path("logout", views.logoutUser, name="logout"),
-     path("login_signup", views.login_signup, name="login_signup"),
-     path("mainpage", views.mainpage, name="mainpage"),
+    path("login_signup", views.login_signup, name="login_signup"),
+    path("mainpage", views.mainpage, name="mainpage"),
     path("signup", views.signup, name="signup"),
-    path("adminPage", views.adminPage, name="adminPage")
+    path("adminPage", views.adminPage, name="adminPage"),
+    path("adminPatient", views.adminPatient, name="adminPatient")
 ]
