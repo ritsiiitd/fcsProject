@@ -14,5 +14,6 @@ urlpatterns = [
     path("adminPage", views.adminPage, name="adminPage"),
     path("adminPatient", views.adminPatient, name="adminPatient"),
     path("patientDashboard", views.patientDashboard, name="patientDashboard"),
-    path("patientUpload", views.patientUpload, name="patientUpload")
+    path("patientUpload", views.patientUpload, name="patientUpload"),
+    path("patientMydocs", views.patientMydocs, name="patientMydocs")
 ]

@@ -207,6 +207,39 @@ def patientUpload(request):
 
     return render(request,'patientUpload.html')
 
+def patientMydocs(request):
+    if request.user.is_anonymous:
+        return redirect("/login")
+    patientUser = request.user
+    allPatients = getallPatientUsernames()
+    print(request.method)
+    context = {
+        'fileName' : []
+    }
+    if(request.method=="GET" and patientUser.username in allPatients):
+        print("hiiiii")
+        for doc in Documents.objects.filter(owner=patientUser.username):
+            slash = doc.file.name.rfind('/')
+            fn = doc.file.name[slash+1:]
+            tuple=(fn,doc.file.name,doc.id)
+            context['fileName'].append(tuple)
+
+    if(request.method=="POST" and patientUser.username in allPatients):
+        for keys in request.POST:
+            print("Deleting??")
+            if(keys=='deleteDoc'):
+                id = request.POST[keys]
+                docModel = Documents.objects.get(id=id)
+                docModel.delete()
+        for doc in Documents.objects.filter(owner=patientUser.username):
+            slash = doc.file.name.rfind('/')
+            fn = doc.file.name[slash+1:]
+            tuple=(fn,doc.file.name,doc.id)
+            context['fileName'].append(tuple)
+
+    return render(request,'patientMydocs.html',context)
+
+
 def patientDashboard(request):
     print(request.user)
     context = {
