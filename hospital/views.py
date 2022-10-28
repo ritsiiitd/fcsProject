@@ -9,7 +9,7 @@ from exceptiongroup import catch
 from matplotlib.pyplot import close
 from numpy import empty
 from rsa import PublicKey, sign
-from hospital.models import Patient
+from hospital.models import Documents, Patient
 import rsa
 from django.core.files import File
 #create_user() in signup
@@ -37,6 +37,10 @@ def loginUser(request):
             if user.is_superuser == 1:
                 return redirect("/adminPage")
             else:
+                for patient in Patient.objects.all():
+                    if str(patient.mobile) == username:
+                        return redirect("/patientDashboard")
+
                 return redirect("/mainpage")
         else:
             return render(request, 'login.html')
@@ -154,7 +158,7 @@ def logoutUser(request):
 
 def getLoggedinPatient(request,context):
     for i in Patient.objects.all():
-            if(str(i.mobile)==request.user.username):
+            if(not request.user.is_anonymous and str(i.mobile)==request.user.username):
                 context['loggedinPatient'] = i
     return context
 
@@ -171,12 +175,58 @@ def mainpage(request):
         context = getLoggedinPatient(request,context)
                 
     return render(request, 'mainpage.html', context)
+def getallPatientUsernames():
+    list = []
+    for p in Patient.objects.values("mobile"):
+        list.append(str(p['mobile']))
+    return list
+
+def patientUpload(request):
+    if request.user.is_anonymous:
+        return redirect("/login")
+    patientUser = request.user
+    allPatients = getallPatientUsernames()
+
+    if(request.method=="POST" and patientUser.username in allPatients):
+        id = Documents.objects.all().count() + 1
+        file = request.FILES['patientDoc']
+        type = request.POST.get("docType")
+        doc = Documents(id=id,file=file,owner=patientUser.username,type=type)
+        doc.save()
+        doc = Documents.objects.get(id=id)
+        sign,pubkey = signDocs(doc.file.path)
+
+        slash = doc.file.name.rfind('/')
+        dot = doc.file.name.find('.')
+        keyName = "publickey"+patientUser.username+doc.file.name[slash+1:dot]+".key"
+        with open ('static/Documents/Keys/'+keyName,'wb') as key_file:
+            key_file.write(pubkey.save_pkcs1('PEM'))
+        doc.signature = str(sign,'latin-1')#storing signature as string
+        doc.publicKey = key_file.name
+        doc.save()
+
+    return render(request,'patientUpload.html')
+
+def patientDashboard(request):
+    print(request.user)
+    context = {
+            'loggedinPatient' : 'NULL'
+        }
+    context = getLoggedinPatient(request,context)
+
+    if request.user.is_anonymous or context['loggedinPatient']=='NULL':
+        return redirect("/login")
+        
+    return render(request, 'patientDashboard.html', context)
+
 
 def countPatients(request,context):
     context['numPatients'] = Patient.objects.all().count()
     return context
 
 def adminPage(request):
+    if request.user.is_anonymous or request.user.is_superuser==0:
+        return redirect("/login")
     context = {
             'loggedinPatient' : 'NULL',
             'allUsers' : get_user_model().objects.all().values(),
@@ -189,6 +239,8 @@ def adminPage(request):
     return render(request,'admin.html',context)
 
 def adminPatient(request):
+    if request.user.is_anonymous or request.user.is_superuser==0:
+        return redirect("/login")
     if(request.method=="POST"):
         for keys in request.POST:
             if(keys=='verifyPatient'):

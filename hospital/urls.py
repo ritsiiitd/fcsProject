@@ -12,6 +12,7 @@ urlpatterns = [
     path("signupDoctor", views.signupDoctor, name="signupDoctor"),
     path("signupPatient", views.signupPatient, name="signupPatient"),
     path("adminPage", views.adminPage, name="adminPage"),
-    path("adminPatient", views.adminPatient, name="adminPatient")
-    # path("adminDoctor", views.adminDoctor, name="adminDoctor")
+    path("adminPatient", views.adminPatient, name="adminPatient"),
+    path("patientDashboard", views.patientDashboard, name="patientDashboard"),
+    path("patientUpload", views.patientUpload, name="patientUpload")
 ]

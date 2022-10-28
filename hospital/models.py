@@ -3,6 +3,7 @@ from unittest.util import _MAX_LENGTH
 from django.db import models
 from django.contrib.auth.models import User
 
+
 # Create your models here.
 class Patient(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE)
@@ -38,3 +39,13 @@ class Doctor(models.Model):
 
     def __Str__(self):
         return self.name
+
+
+class Documents(models.Model):
+    id = models.IntegerField(primary_key=True,null = False)
+    type = models.CharField(max_length=40,default='other')
+    file = models.FileField(upload_to='static/Documents/Upload',null=False,blank=True)
+    signature = models.CharField(max_length=1024,null=True)
+    publicKey = models.FileField(upload_to='static/Documents/Keys',null=True,blank=True)
+    owner = models.CharField(max_length=40,null=False)
+    sharedWith = models.TextField(null=True)
