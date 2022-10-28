@@ -120,8 +120,10 @@ def verify(doc,signature,pubkey):
     try:
         rsa.verify(doc,signature,pubkey)
         print("Identity digital signature verified")
+        return True
     except:
         print("WARNING, Identity could not be verified")
+        return False
 
 
 def signupDoctor(request):
@@ -194,8 +196,6 @@ def adminPatient(request):
                 patientModel = Patient.objects.get(mobile=patientUsername)
                 print(patientModel.verified)
                 patientModel.verified = True
-                # patientUser = get_user_model().objects.get(username=patientUsername)
-                # print(patientUser)
                 patientModel.save()
             if(keys=='deletePatient'):
                 patientUsername = request.POST[keys]
@@ -203,8 +203,22 @@ def adminPatient(request):
                 patientUser = get_user_model().objects.get(username=patientUsername)
                 patientModel.delete()
                 patientUser.delete()
-    for key in Patient.objects.all().values():
-        print(key)
+            if(keys=='verifyIdentity'):
+                patientUsername = request.POST[keys]
+                patientModel = Patient.objects.get(mobile=patientUsername)
+                signFile = patientModel.identitySign
+                pubkey = rsa.PublicKey.load_pkcs1(open(patientModel.publicKey.name,'rb').read())
+                doc = open(patientModel.identity.name,'rb').read()
+                close(patientModel.identity.name)
+                close(patientModel.publicKey.name)
+                success = verify(doc,bytes(signFile,'latin-1'),pubkey)
+                if(success):
+                    patientModel.signVerified = 1
+                else:
+                    patientModel.signVerified = 2
+                patientModel.save()
+    # for key in Patient.objects.all().values():
+    #     print(key)
     verifyDoc = {'original':'xyz.pdf',
                 'signature':'sign',
                 'public_key':'pub'

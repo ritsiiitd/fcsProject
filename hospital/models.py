@@ -17,7 +17,8 @@ class Patient(models.Model):
     userType = models.CharField(max_length=10)
     dateCreated = models.DateField()
     verified = models.BooleanField(default=False)
-
+    signVerified = models.IntegerField(default=0)
+    
     def __Str__(self):
         return self.name
 
