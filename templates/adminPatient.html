@@ -16,7 +16,7 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#">Home</a>
+              <a class="nav-link active" aria-current="page" href="/adminPage">Home</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="#">Link</a>
@@ -47,6 +47,13 @@
   
     <div class="container my-4">
         <div class="row">
+            {% if numPatients == 0 %}
+                <div class="container-fluid my-4">
+                    <p class="lead">
+                        Ooops! No patients have registered yet. Check again later :/
+                      </p>
+                </div>
+            {% endif %}
             {% for patient in patientList %}
             <div class="col-lg-6 mb-4">
                 <div class="card my-4">
@@ -58,6 +65,8 @@
                         <p class="card-text">
                             Contact : {{patient.mobile}}
                         </p>
+
+                        <p>Open a PDF file <a href={{patient.identity}}>example</a>.</p></body>
                         
                         <form method="POST" action="/adminPatient">
                             {% if patient.verified  %}

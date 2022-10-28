@@ -1,9 +1,17 @@
 from datetime import datetime
+from nis import cat
+from operator import indexOf
+from xml.dom.minidom import Document
 from django.shortcuts import redirect, render
 from django.contrib.auth.models import User
 from django.contrib.auth import logout,login,authenticate,get_user_model
+from exceptiongroup import catch
+from matplotlib.pyplot import close
 from numpy import empty
+from rsa import PublicKey, sign
 from hospital.models import Patient
+import rsa
+from django.core.files import File
 #create_user() in signup
 patientCount = 0
 # Create your views here.
@@ -35,24 +43,108 @@ def loginUser(request):
     return render(request, 'login.html')
 
 def signup(request):
+    return render(request,"signup.html")
+
+def signDocs(file):
+    (public,private) = rsa.newkeys(2048)
+    with open('privatekey.key','wb') as key_file:
+        key_file.write(private.save_pkcs1('PEM'))
+    privkey = rsa.PrivateKey.load_pkcs1(open('privatekey.key','rb').read())
+    close('privatekey.key')
+    # print(privkey)
+    # print(private)
+    message = open(file,'rb').read()
+    close(file)
+    signature = rsa.sign(message,private,'SHA-512')
+    # verify(message,signature,public)
+    return signature,public
+
+
+# Register new Patient
+# Digitally Sign the uploaded identity Document
+# Store signature and public key along with doc in Patient model
+def signupPatient(request):
     userType = request.POST.get("userType")
     if(request.method=="POST" and userType=="Patient"):
         name = request.POST.get("name")
         address = request.POST.get("address")
         email = request.POST.get("email")
         phone = request.POST.get("phone")
-        dp = request.POST.get("dp")
+        dp = request.FILES["dp"]
+        aadhar = request.FILES["aadhar"]
         password = request.POST.get("password")
         
         patientUser = User.objects.create_user(str(phone), email, password)
         patientUser.first_name = name
         patientUser.save()
-        print(patientUser)
-        patient = Patient(user=patientUser,profile_pic=dp,name=name,email=email,address=address,mobile=phone,userType=userType,dateCreated=datetime.today(),verified=False)
-        print(patientCount+1)
+        # print("patient profile picture",type(dp))
+        patient = Patient(user=patientUser,identity=aadhar,profile_pic=dp,name=name,email=email,address=address,mobile=phone,userType=userType,dateCreated=datetime.today(),verified=False)
         patient.save()
-        patientCount+1
-    return render(request,'signup.html')
+
+        #sign the document
+        patient = Patient.objects.get(mobile=phone)
+        # print(patient.name,"+++++++++++++++++++++++++++",patient.identity)
+        
+        identitySign,publicKey = signDocs(patient.identity.path)
+        
+
+        slash = patient.identity.name.rfind('/')
+        dot = patient.identity.name.find('.')
+        keyName = "publickey"+str(patient.mobile)+patient.identity.name[slash+1:dot]+".key"
+        with open ('static/Patient/Keys/'+keyName,'wb') as key_file:
+            key_file.write(publicKey.save_pkcs1('PEM'))
+        # signName = "signature_file"+str(patient.mobile)+patient.identity.name[slash+1:dot]
+        # s = open('static/Patient/Signatures/'+signName,'wb')
+        # s.write(identitySign)
+        # print(key_file,s)
+        print(type(identitySign))
+        patient.identitySign = str(identitySign,'latin-1')#storing signature as string
+        patient.publicKey = key_file.name
+        patient.save()
+
+        #verifying
+        patient = Patient.objects.get(mobile=phone)
+        signFile = patient.identitySign
+
+        pubkey = rsa.PublicKey.load_pkcs1(open(patient.publicKey.name,'rb').read())
+        doc = open(patient.identity.name,'rb').read()
+        close(patient.identity.name)
+        close(patient.publicKey.name)
+     
+        verify(doc,bytes(signFile,'latin-1'),pubkey)
+        
+    return render(request,'signupPatient.html')
+
+
+def verify(doc,signature,pubkey):
+    try:
+        rsa.verify(doc,signature,pubkey)
+        print("Identity digital signature verified")
+    except:
+        print("WARNING, Identity could not be verified")
+
+
+def signupDoctor(request):
+    userType = request.POST.get("userType")
+    if(request.method=="POST" and userType=="Doctor"):
+        name = request.POST.get("name")
+        address = request.POST.get("address")
+        email = request.POST.get("email")
+        phone = request.POST.get("phone")
+        dp = request.POST.get("dp")
+        password = request.POST.get("password")
+        license = request.POST.get("license")
+        otherDocs = request.POST.get("other")
+        print("Did you try to signup a doctor?")
+        # patientUser = User.objects.create_user(str(phone), email, password)
+        # patientUser.first_name = name
+        # patientUser.save()
+        # print(patientUser)
+        # patient = Patient(user=patientUser,profile_pic=dp,name=name,email=email,address=address,mobile=phone,userType=userType,dateCreated=datetime.today(),verified=False)
+        # print(patientCount+1)
+        # patient.save()
+        # patientCount+1
+    return render(request,'signupDoctor.html')
 
 def logoutUser(request):
     logout(request)
@@ -97,7 +189,6 @@ def adminPage(request):
 def adminPatient(request):
     if(request.method=="POST"):
         for keys in request.POST:
-            print((keys))
             if(keys=='verifyPatient'):
                 patientUsername = request.POST[keys]
                 patientModel = Patient.objects.get(mobile=patientUsername)
@@ -112,7 +203,12 @@ def adminPatient(request):
                 patientUser = get_user_model().objects.get(username=patientUsername)
                 patientModel.delete()
                 patientUser.delete()
-
+    for key in Patient.objects.all().values():
+        print(key)
+    verifyDoc = {'original':'xyz.pdf',
+                'signature':'sign',
+                'public_key':'pub'
+                }
     context = {
             'loggedinPatient' : 'NULL',
             'numPatients' : 0,
