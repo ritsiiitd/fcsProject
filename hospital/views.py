@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import logout,login,authenticate,get_user_model
 from exceptiongroup import catch
 from matplotlib.pyplot import close
+from matplotlib.style import use
 from numpy import empty
 from rsa import PublicKey, sign
 from hospital.models import Documents, Patient
@@ -14,6 +15,7 @@ import rsa
 from django.core.files import File
 import phonenumbers
 from django.contrib import messages
+from .otp import sendOTP
 #create_user() in signup
 patientCount = 0
 # Create your views here.
@@ -39,6 +41,9 @@ def loginUser(request):
             if user.is_superuser == 1:
                 return redirect("/adminPage")
             else:
+                # otp = sendOTP(username)
+                # print(user)
+                return render(request, 'otpVerif.html', {'user':user , 'req' : request})
                 for patient in Patient.objects.all():
                     if str(patient.mobile) == username:
                         return redirect("/patientDashboard")
@@ -343,3 +348,32 @@ def adminPatient(request):
     context = getLoggedinPatient(request,context)
     
     return render(request,'adminPatient.html',context)
+
+
+
+
+def otpVerif(request):
+
+    if(request.method=="POST"):
+        user = request.POST.get('user')
+        otp = request.POST.get('otp')
+        print("username" , user)
+        print("otp" ,otp)
+        if user is None:
+            return redirect('login')
+
+        else:
+            #legit user lets verify otp
+            otp = request.POST.get('otp')
+            realOtp = request.POST.get('realOTP')
+
+            print(realOtp)
+            print(otp)
+            if(otp==realOtp):
+                for patient in Patient.objects.all():
+                    if str(patient.mobile) == user:
+                        return redirect("/patientDashboard")
+            else:
+                messages.warning(request, 'OTP mismatch, login again')
+                logoutUser(request)
+                return redirect('login')

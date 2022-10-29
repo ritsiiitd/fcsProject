@@ -124,3 +124,5 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+OTP_API = 'cb111e09-57ae-11ed-9c12-0200cd936042'
