@@ -12,6 +12,8 @@ from rsa import PublicKey, sign
 from hospital.models import Documents, Patient
 import rsa
 from django.core.files import File
+import phonenumbers
+from django.contrib import messages
 #create_user() in signup
 patientCount = 0
 # Create your views here.
@@ -67,6 +69,11 @@ def signDocs(file):
 # Register new Patient
 # Digitally Sign the uploaded identity Document
 # Store signature and public key along with doc in Patient model
+def validatePhone(phone):
+    
+    my_number = phonenumbers.parse(phone)
+    return phonenumbers.is_possible_number(my_number)
+
 def signupPatient(request):
     userType = request.POST.get("userType")
     if(request.method=="POST" and userType=="Patient"):
@@ -74,6 +81,25 @@ def signupPatient(request):
         address = request.POST.get("address")
         email = request.POST.get("email")
         phone = request.POST.get("phone")
+
+
+        allUsers = []
+        for user in get_user_model().objects.all():
+            allUsers.append(user.username)
+        print(allUsers)
+
+        if(phone in allUsers):
+            print("Phone number already used, not registered")
+            messages.warning(request, 'Phone number already used, not registered')
+            return redirect('signupPatient')
+
+        if(not validatePhone("+91"+phone)):
+            print("Phone number Invalid!!, not registered")
+            messages.warning(request, 'Phone number Invalid!!, not registered')
+            return redirect('signupPatient')
+        else:
+            print("valid number")
+
         dp = request.FILES["dp"]
         aadhar = request.FILES["aadhar"]
         password = request.POST.get("password")
@@ -105,7 +131,7 @@ def signupPatient(request):
         patient.identitySign = str(identitySign,'latin-1')#storing signature as string
         patient.publicKey = key_file.name
         patient.save()
-
+        messages.success(request, 'Patient Signed Up Successfully')
         #verifying
         patient = Patient.objects.get(mobile=phone)
         signFile = patient.identitySign

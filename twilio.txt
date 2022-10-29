@@ -1,0 +1,6 @@
+phone:  +14246552566
+
+ssid : ACbf30ac3fb7d3bd888f738da5eca72289
+
+
+auth token: dad7c90d992e5d12e9277c141b53fc5b
