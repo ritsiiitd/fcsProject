@@ -16,5 +16,7 @@ urlpatterns = [
     path("patientDashboard", views.patientDashboard, name="patientDashboard"),
     path("patientUpload", views.patientUpload, name="patientUpload"),
     path("patientMydocs", views.patientMydocs, name="patientMydocs"),
-    path("otpVerif", views.otpVerif, name="otpVerif")
+    path("otpVerif", views.otpVerif, name="otpVerif"),
+    path("phoneNumber", views.phoneNumber, name="phoneNumber"),
+    path("patientOtp", views.patientOtp, name="patientOtp")
 ]

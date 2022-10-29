@@ -19,7 +19,7 @@ class Patient(models.Model):
     dateCreated = models.DateField()
     verified = models.BooleanField(default=False)
     signVerified = models.IntegerField(default=0)
-    
+    phoneVerified = models.IntegerField(default=0)
     def __Str__(self):
         return self.name
 

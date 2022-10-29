@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Register a doctor</title>
+    <title>Bootstrap demo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
   </head>
   <body>
@@ -43,6 +43,22 @@
         </div>
       </div>
     </nav>
+
+
+    
+
+
+    {% comment %} alert {% endcomment %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
   
     <body class="text-center">
@@ -50,24 +66,14 @@
 
       {% comment %} Signup {% endcomment %}
       <main class="container form-signin w-100 m-auto my-4">
-        <form method="post" action="/signupDoctor">
+        <form method="post" action="/signupPatient" enctype="multipart/form-data">
         {% csrf_token %}
           <img class="mb-4 mt-5 mt-5" src="/static/user_logo.png" alt="" width="72" height="57">
-          <h1 class="h3 mb-3 fw-normal">Register new Doctor</h1>
+          <h1 class="h3 mb-3 fw-normal">Register new Patient</h1>
           <div class="form-floating">
             <input type="text" class="form-control" id="floatingInput" required name="name" placeholder="Your Name">
             <label for="floatingInput">Enter your name</label>
           </div>
-          <select class="form-select" aria-label="Default select example" name="userType">
-            <option selected>Select Specialization</option>
-            <option value="Cardiologist">Cardiologist</option>
-            <option value="Dermatologists">Dermatologists</option>
-            <option value="Gastroenterologists">Gastroenterologists</option>
-            <option value="Neurologists">Neurologists</option>
-            <option value="Gynecologists">Gynecologists</option>
-            <option value="Pathologists">Pathologists</option>
-            <option value="Physician">Physician</option>
-          </select>
           <div class="form-floating">
             <input type="address" class="form-control" id="floatingInput" required name="address" placeholder="Address">
             <label for="floatingInput">Enter your address</label>
@@ -80,17 +86,15 @@
             <input type="number" required class="form-control" id="floatingInput" name="phone" placeholder="Enter phone number">
             <label for="floatingInput">Contact(+91)</label>
           </div>
-          <label class="form-label" name="dp" for="customFile">Profile Picture</label>
-            <input type="file" class="form-control" name="dp" id="dp" />
           <label></label>
-          <label class="form-label" name="license" for="customFile">License</label>
-            <input type="file" class="form-control" name="license" id="license" />
+          <label class="form-label" for="customFile">Profile Picture</label>
+            <input type="file" required class="form-control" name="dp" id="dp" />
           <label></label>
-          <label class="form-label" name="other" for="customFile">other Documents</label>
-            <input type="file" class="form-control" name="other" id="other" />
+          <label class="form-label" for="customFile">Proof of Identity(aadhar/panCard)</label>
+            <input type="file" required class="form-control" name="aadhar" id="aadhar" />
           <label></label>
           <div class="form-floating">
-            <input type="password" class="form-control" name="password" id="floatingPassword" placeholder="Password">
+            <input type="password" class="form-control" required name="password" id="floatingPassword" placeholder="Password">
             <label for="floatingPassword">Password</label>
           </div>
           <label></label>

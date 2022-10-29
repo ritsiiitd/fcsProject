@@ -82,10 +82,7 @@
             <input type="email" class="form-control" id="floatingInput" name="email" placeholder="name@example.com">
             <label for="floatingInput">Email address</label>
           </div>
-          <div class="form-floating">
-            <input type="number" required class="form-control" id="floatingInput" name="phone" placeholder="Enter phone number">
-            <label for="floatingInput">Contact(+91)</label>
-          </div>
+          <input type="hidden" id="phone" name="phone" value={{phone}}>
           <label></label>
           <label class="form-label" for="customFile">Profile Picture</label>
             <input type="file" required class="form-control" name="dp" id="dp" />
@@ -104,10 +101,7 @@
             </label>
           </div> {% endcomment %}
           <select class="form-select" aria-label="Default select example" name="userType">
-            <option selected>Select Type of User</option>
-            <option value="Patient">Patient</option>
-            <option value="Doctor">Doctor</option>
-            <option value="Organization">Organization</option>
+            <option selected value="Patient">Patient</option>
           </select>
 
           <button class="w-50 btn btn-lg btn-primary my-4" name="submitButton" type="submit">Sign up</button>

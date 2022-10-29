@@ -50,7 +50,7 @@
 
       {% comment %} LOGIN {% endcomment %}
       <main class="container form-signin w-100 m-auto my-4">
-        <form method="post" action="/signupPatient">
+        <form method="POST" action="/phoneNumber">
         {% csrf_token %}
           <img class="mb-4 mt-5 mt-5" src="/static/user_logo.png" alt="" width="72" height="57">
           <h1 class="h3 mb-3 fw-normal">Welcome to Hospital Manager</h1>
@@ -69,9 +69,10 @@
               <input type="checkbox" value="remember-me"> Remember me
             </label>
           </div> {% endcomment %}
-          <button class="w-50 btn btn-lg btn-primary my-4" type="submit">Patient</button>
+          <input type="hidden" id="type" name="type" value="patient">
+          <button class="w-50 btn btn-lg btn-primary my-4" type="submit" name="Patient" value="Patient">Patient</button>
         </form>
-        <form method="post" action="/signupDoctor">
+        <form method="post" action="/phoneNumber">
           {% csrf_token %}
           <button class="w-50 btn btn-lg btn-primary my-4" type="submit">Doctor</button>
         </form>

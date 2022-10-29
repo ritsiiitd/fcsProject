@@ -41,14 +41,14 @@ def loginUser(request):
             if user.is_superuser == 1:
                 return redirect("/adminPage")
             else:
-                # otp = sendOTP(username)
+                otp = sendOTP(username)
                 # print(user)
-                return render(request, 'otpVerif.html', {'user':user , 'req' : request})
-                for patient in Patient.objects.all():
-                    if str(patient.mobile) == username:
-                        return redirect("/patientDashboard")
+                return render(request, 'otpVerif.html', {'user':user , 'req' : request, 'realOtp':otp})
+                # for patient in Patient.objects.all():
+                #     if str(patient.mobile) == username:
+                #         return redirect("/patientDashboard")
 
-                return redirect("/mainpage")
+                # return redirect("/mainpage")
         else:
             return render(request, 'login.html')
     return render(request, 'login.html')
@@ -88,22 +88,22 @@ def signupPatient(request):
         phone = request.POST.get("phone")
 
 
-        allUsers = []
-        for user in get_user_model().objects.all():
-            allUsers.append(user.username)
-        print(allUsers)
+        # allUsers = []
+        # for user in get_user_model().objects.all():
+        #     allUsers.append(user.username)
+        # print(allUsers)
 
-        if(phone in allUsers):
-            print("Phone number already used, not registered")
-            messages.warning(request, 'Phone number already used, not registered')
-            return redirect('signupPatient')
+        # if(phone in allUsers):
+        #     print("Phone number already used, not registered")
+        #     messages.warning(request, 'Phone number already used, not registered')
+        #     return redirect('signupPatient')
 
-        if(not validatePhone("+91"+phone)):
-            print("Phone number Invalid!!, not registered")
-            messages.warning(request, 'Phone number Invalid!!, not registered')
-            return redirect('signupPatient')
-        else:
-            print("valid number")
+        # if(not validatePhone("+91"+phone)):
+        #     print("Phone number Invalid!!, not registered")
+        #     messages.warning(request, 'Phone number Invalid!!, not registered')
+        #     return redirect('signupPatient')
+        # else:
+        #     print("valid number")
 
         dp = request.FILES["dp"]
         aadhar = request.FILES["aadhar"]
@@ -150,6 +150,54 @@ def signupPatient(request):
         
     return render(request,'signupPatient.html')
 
+def phoneNumber(request):
+    
+    if(request.method=="POST" and request.POST.get('phone') is not None):
+        phone = request.POST.get('phone')
+        allUsers = []
+        for user in get_user_model().objects.all():
+            allUsers.append(user.username)
+            print(allUsers)
+
+        if(phone in allUsers):
+            print("Phone number already used, not registered")
+            messages.warning(request, 'Phone number already used, not registered')
+            return redirect('phoneNumber')
+
+        if(not validatePhone("+91"+phone)):
+            print("Phone number Invalid!!, not registered")
+            messages.warning(request, 'Phone number Invalid!!, not registered')
+            return redirect('phoneNumber')
+        else:
+            print("Entered phone no is",phone)
+            otp = sendOTP(phone)
+            print('sent otp is ',otp)
+            return render(request,'patientOtp.html',{'phone':phone,'realOtp':str(otp)})
+    
+    return render(request,'phoneNumber.html')
+
+def patientOtp(request):
+    if(request.method=="POST"):
+        phone = request.POST.get('phone')
+        otp = request.POST.get('otp')
+        print("username" , phone)
+        print("otp" ,otp)
+        if phone is None:
+            return redirect('signup')
+        else:
+            #legit user trying to register lets verify otp
+            otp = request.POST.get('otp')
+            realOtp = request.POST.get('realOtp')
+            # realOtp = otp
+            print(realOtp)
+            print(otp)
+            if(otp==realOtp):
+                return render(request,'signupPatient.html',{'phone':phone})
+            else:
+                messages.warning(request, 'OTP mismatch, enter again')
+                logoutUser(request)
+                return redirect('patientOtp')
+    return render(request,'patientOtp.html')
 
 def verify(doc,signature,pubkey):
     try:
@@ -365,7 +413,7 @@ def otpVerif(request):
         else:
             #legit user lets verify otp
             otp = request.POST.get('otp')
-            realOtp = request.POST.get('realOTP')
+            realOtp = request.POST.get('realOtp')
 
             print(realOtp)
             print(otp)
