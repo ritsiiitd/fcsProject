@@ -8,7 +8,7 @@ from django.contrib.auth import logout,login,authenticate,get_user_model
 from exceptiongroup import catch
 from matplotlib.pyplot import close
 from matplotlib.style import use
-from numpy import empty
+from numpy import empty, size
 from rsa import PublicKey, sign
 from hospital.models import Doctor, Documents, Patient
 import rsa
@@ -615,4 +615,42 @@ def otpVerif(request):
                 logoutUser(request)
                 return redirect('login')
 
+def editPatient(request):
+    print(request.user)
+    context = {
+            'loggedinPatient' : 'NULL'
+        }
+    context = getLoggedinPatient(request,context)
 
+    if request.user.is_anonymous or context['loggedinPatient']=='NULL':
+        return redirect("/login")
+
+    elif(request.method=="POST"):
+
+        address = request.POST.get("address")
+        email = request.POST.get("email")
+        dp = request.FILES.get("dp")
+
+        password = request.POST.get("password")
+        patient = Patient.objects.get(mobile=int(request.user.username))
+
+        print(patient)
+
+        if(len(address) !=0):
+            patient.address = address
+        
+        if(len(email)!=0):
+            patient.email = email
+        
+        if(dp is not None):
+            patient.profile_pic = dp
+        
+        if(len(password)!=0):
+            puser = get_user_model().objects.get(username=request.user.username)
+            puser.set_password(password)
+            puser.save()
+        
+        patient.save()
+        messages.success(request, 'Profile updated')
+
+    return render(request, 'editPatient.html', context)

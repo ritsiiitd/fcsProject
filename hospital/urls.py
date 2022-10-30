@@ -24,4 +24,6 @@ urlpatterns = [
     path("phoneNumberDoctor", views.phoneNumberDoctor, name="phoneNumberDoctor"),
     path("doctorOtp", views.doctorOtp, name="doctorOtp"),
     path("patientOtp", views.patientOtp, name="patientOtp"),
+    path("editPatient", views.editPatient, name="editPatient")
+
 ]
