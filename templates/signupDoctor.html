@@ -69,7 +69,7 @@
         <form method="post" action="/signupPatient" enctype="multipart/form-data">
         {% csrf_token %}
           <img class="mb-4 mt-5 mt-5" src="/static/user_logo.png" alt="" width="72" height="57">
-          <h1 class="h3 mb-3 fw-normal">Register new Patient</h1>
+          <h1 class="h3 mb-3 fw-normal">Register new Doctor</h1>
           <div class="form-floating">
             <input type="text" class="form-control" id="floatingInput" required name="name" placeholder="Your Name">
             <label for="floatingInput">Enter your name</label>
@@ -82,16 +82,13 @@
             <input type="email" class="form-control" id="floatingInput" name="email" placeholder="name@example.com">
             <label for="floatingInput">Email address</label>
           </div>
-          <div class="form-floating">
-            <input type="number" required class="form-control" id="floatingInput" name="phone" placeholder="Enter phone number">
-            <label for="floatingInput">Contact(+91)</label>
-          </div>
+          <input type="hidden" id="phone" name="phone" value={{phone}}>
           <label></label>
           <label class="form-label" for="customFile">Profile Picture</label>
             <input type="file" required class="form-control" name="dp" id="dp" />
           <label></label>
-          <label class="form-label" for="customFile">Proof of Identity(aadhar/panCard)</label>
-            <input type="file" required class="form-control" name="aadhar" id="aadhar" />
+          <label class="form-label" for="customFile">license</label>
+            <input type="file" required class="form-control" name="license" id="license" />
           <label></label>
           <div class="form-floating">
             <input type="password" class="form-control" required name="password" id="floatingPassword" placeholder="Password">
@@ -103,11 +100,19 @@
               <input type="checkbox" value="remember-me"> Remember me
             </label>
           </div> {% endcomment %}
+          <select class="form-select" aria-label="Default select example" name="specialization">
+            <option selected>Select specialization</option>
+            <option value="Cardiologist">Cardiologist</option>
+            <option value="Physician">Physician</option>
+            <option value="Dermatologists">Dermatologists</option>
+            <option value="Gastroenterologists">Gastroenterologists</option>
+            <option value="Neurologists">Neurologists</option>
+            <option value="Radiologists">Radiologists</option>
+            <option value="Gynecologist">Gynecologist </option>
+            <option value="Other">Other </option>
+          </select>
           <select class="form-select" aria-label="Default select example" name="userType">
-            <option selected>Select Type of User</option>
-            <option value="Patient">Patient</option>
-            <option value="Doctor">Doctor</option>
-            <option value="Organization">Organization</option>
+            <option selected value="Doctor">Doctor</option>
           </select>
 
           <button class="w-50 btn btn-lg btn-primary my-4" name="submitButton" type="submit">Sign up</button>

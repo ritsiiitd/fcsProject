@@ -184,6 +184,7 @@ def patientOtp(request):
         print("otp" ,otp)
         if phone is None:
             return redirect('signup')
+
         else:
             #legit user trying to register lets verify otp
             otp = request.POST.get('otp')
@@ -267,7 +268,7 @@ def patientUpload(request):
     allPatients = getallPatientUsernames()
 
     if(request.method=="POST" and patientUser.username in allPatients):
-        id = Documents.objects.all().count() + 1
+        id = Documents.objects.all().last().id + 1
         file = request.FILES['patientDoc']
         type = request.POST.get("docType")
         doc = Documents(id=id,file=file,owner=patientUser.username,type=type)

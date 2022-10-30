@@ -26,9 +26,11 @@ class Patient(models.Model):
 
 class Doctor(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE)
-    profile_pic = models.ImageField(upload_to='static/Doctor/',null=True,blank=True)
-    license = models.FileField(upload_to='static/Doctor/',null=True,blank=True)
-    other_docs = models.FileField(upload_to='static/Doctor/',null=True,blank=True)
+    profile_pic = models.ImageField(upload_to='static/Doctor/Profile_pics',null=True,blank=True)
+    license = models.FileField(upload_to='static/Doctor/License',null=True,blank=True)
+    identitySign = models.CharField(max_length=1024,null=True)
+    publicKey = models.FileField(upload_to='static/Doctor/Keys',null=True,blank=True)
+    specialization = models.CharField(max_length=40,null=True)
     name = models.CharField(max_length=40,null='False')
     email = models.CharField(max_length=40,default="xyz@gmail.com")
     address = models.CharField(max_length=40,null='False')
@@ -36,7 +38,8 @@ class Doctor(models.Model):
     userType = models.CharField(max_length=10)
     dateCreated = models.DateField()
     verified = models.BooleanField(default=False)
-
+    signVerified = models.IntegerField(default=0)
+    phoneVerified = models.IntegerField(default=0)
     def __Str__(self):
         return self.name
 
