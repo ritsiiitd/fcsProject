@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Patient Dashboard</title>
+
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+  
+
+  </style>
+</head>
+
+<body>
+    
+    <main>
+  
+  
+      <!-- nav start -->
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">Navbar</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/doctorDashboard">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/doctorUpload">Upload Docs</a>
+              </li> 
+              
+              <li class="nav-item">
+                <a class="nav-link" href="/doctorMydocs">My Docs</a>
+              </li>
+            </ul>
+            
+          </div>
+        </div>
+        <a href="/logout" class="nav-item nav-link">Logout</a>
+      </nav>
+    <!-- nav end -->
+    {% for i in fileName %}
+    <div class = "container">
+        <h2>{{i.0}}</h2>
+        <iframe src={{i.1}} width="100%" height="500px"> 
+        </iframe>
+        <div class="container">
+            <form method="POST" action="/doctorMydocs">
+                {% csrf_token %}
+                <button class="w-100 btn btn-lg btn-danger" value = {{i.2}} name="deleteDoc" type="submit">Delete</button>
+            </form>
+        </div>
+        <br>
+        <br>
+    {% endfor %}
+    </div>
+      <br><br><br><br>
+      <footer>
+          {% csrf_token %}
+  
+        <br>
+        <div class="container">
+          <div class="row">
+            <div class="col-md-12 col-sm-12">
+              <div style="color:#ffffff;" class="wow fadeInUp footer-copyright">
+                <p>FCS Doctor<br>
+                  Copyright &copy; 2022 </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
+  
+    </main>
+  </body>
+  
+  </html>

@@ -14,9 +14,14 @@ urlpatterns = [
     path("adminPage", views.adminPage, name="adminPage"),
     path("adminPatient", views.adminPatient, name="adminPatient"),
     path("patientDashboard", views.patientDashboard, name="patientDashboard"),
+    path("doctorDashboard", views.doctorDashboard, name="doctorDashboard"),
     path("patientUpload", views.patientUpload, name="patientUpload"),
+    path("doctorUpload", views.doctorUpload, name="doctorUpload"),
     path("patientMydocs", views.patientMydocs, name="patientMydocs"),
+    path("doctorMydocs", views.doctorMydocs, name="doctorMydocs"),
     path("otpVerif", views.otpVerif, name="otpVerif"),
     path("phoneNumber", views.phoneNumber, name="phoneNumber"),
-    path("patientOtp", views.patientOtp, name="patientOtp")
+    path("phoneNumberDoctor", views.phoneNumberDoctor, name="phoneNumberDoctor"),
+    path("doctorOtp", views.doctorOtp, name="doctorOtp"),
+    path("patientOtp", views.patientOtp, name="patientOtp"),
 ]

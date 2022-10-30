@@ -4,7 +4,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Admin</title>
+  <title>Doctor Dashboard</title>
 
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -28,12 +28,6 @@
       color: white;
     }
 
-
-
-
-    /*---------------------------------------
-       Social section
-    -----------------------------------------*/
     footer {
       padding: 0px 0px 0px 0px;
       background-color: black;
@@ -86,10 +80,6 @@
       text-align: center;
 
     }
-
-
-
-
 
     body {
 
@@ -271,26 +261,23 @@
     }
 
   </style>
-
 </head>
-
 <body>
     
-  
   <nav class="menu" tabindex="0">
     {% csrf_token %}
     <div class="smartphone-menu-trigger my-4"></div>
     <header class="avatar">
       <img src="static/user_logo.png" />
       <br><br>
-      <a style="color:white; text-decoration:none;"><h6>Welcome Admin</h6>
+      <a style="color:white; text-decoration:none;"><h6>Welcome Doctor</h6>
       <h2>{{request.user.first_name}}</h2>
     </header>
     <ul>
-      <li tabindex="0" class="icon-dashboard"> <a style="color:white; text-decoration:none;" href="/adminPage"><span>Dashboard</span></a> </li>
-      <li tabindex="0" class="icon-customers"> <a style="color:white; text-decoration:none;" href="/adminDoctor"><span>Doctors</span></a></li>
-      <li tabindex="0" class="icon-users"> <a style="color:white; text-decoration:none;" href="/adminPatient"><span>Patients</span></a></li>
-      <li tabindex="0" class="icon-calendar"> <a style="color:white; text-decoration:none;" href="/admin-appointment"><span>Appointment</span></a></li>
+      <li tabindex="0" class="icon-dashboard"> <a style="color:white; text-decoration:none;" href="/doctorDashboard"><span>Dashboard</span></a> </li>
+      <li tabindex="0" class="icon-customers"> <a style="color:white; text-decoration:none;" href="/doctorUpload"><span>Upload Documents</span></a></li>
+      <li tabindex="0" class="icon-users"> <a style="color:white; text-decoration:none;" href="/doctorMydocs"><span>My Documents</span></a></li>
+      <li tabindex="0" class="icon-calendar"> <a style="color:white; text-decoration:none;" href="/doctorProfile"><span>Edit Profile</span></a></li>
     </ul>
   </nav>
 
@@ -307,35 +294,23 @@
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
               <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#">Home</a>
+                <a class="nav-link active" aria-current="page" href="/doctorDashboard">Home</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="#">Link</a>
+                <a class="nav-link" href="/doctorUpload">Upload Docs</a>
               </li> 
-              <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  Dropdown
-                </a>
-                <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" href="#">Action</a></li>
-                  <li><a class="dropdown-item" href="#">Another action</a></li>
-                  <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item" href="#">Something else here</a></li>
-                </ul>
-              </li>
+              
               <li class="nav-item">
-                <a class="nav-link disabled">Disabled</a>
+                <a class="nav-link" href="/doctorMydocs">My Docs</a>
               </li>
             </ul>
-            <form class="d-flex" role="search">
-              <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-              <button class="btn btn-outline-success" type="submit">Search</button>
-            </form>
+            
           </div>
         </div>
         <a href="/logout" class="nav-item nav-link">Logout</a>
       </nav>
     <!-- nav end -->
+    
     <div class="container-fluid px-0">
         <div class="carousel-item">
             <img src="https://source.unsplash.com/1600x700/?patient" alt="First slide">
@@ -365,22 +340,22 @@
               <div class="carousel-item active">
                 <img class="d-block w-100" src="https://source.unsplash.com/1600x700/?people" alt="First slide">
                 <div class="carousel-caption d-none d-md-block">
-                    <h5><b>{{numPatients}}</b> patients are registered on the system, go to Patient tab to check the list</h5>
-                    <p><i>...approve signups and manage patients</i></p>
+                    <h5><b>{{numPatients}}</b> take appointments</h5>
+                    <p><i>...approve appointments</i></p>
                   </div>
 x              </div>
               <div class="carousel-item">
                 <img class="d-block w-100" src="https://source.unsplash.com/1600x700/?doctor" alt="Second slide">
                 <div class="carousel-caption d-none d-md-block">
-                    <h5><b>{{numPatients}}</b> doctors are registered on the system, go to Patient tab to check the list</h5>
-                    <p><i>...approve signups and manage healthcare professionals</i></p>
+                    <h5><b>{{numPatients}}</b> upload documents</h5>
+                    <p><i>...you can share verifiable documents</i></p>
                   </div>
               </div>
               <div class="carousel-item">
                 <img class="d-block w-100" src="https://source.unsplash.com/1600x700/?hospital" alt="Third slide">
                 <div class="carousel-caption d-none d-md-block">
-                    <h5><b>{{numPatients}}</b> organizations are registered on the system, go to Patient tab to check the list</h5>
-                    <p><i>...approve signups and manage organizations</i></p>
+                    <h5><b>{{numPatients}}</b> admin has approved your profile</h5>
+                    <p><i>...you can contact admin for further queries</i></p>
                   </div>
               </div>
             </div>
@@ -418,7 +393,7 @@ x              </div>
         <div class="row">
           <div class="col-md-12 col-sm-12">
             <div style="color:#ffffff;" class="wow fadeInUp footer-copyright">
-              <p>FCS admin<br>
+              <p>Doctor Dashboard<br>
                 Copyright &copy; 2022 </p>
             </div>
           </div>
@@ -427,7 +402,6 @@ x              </div>
     </footer>
 
   </main>
-
 </body>
 
 </html>
