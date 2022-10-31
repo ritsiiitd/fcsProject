@@ -1,6 +1,8 @@
 from datetime import datetime
+import json
 from nis import cat
 from operator import indexOf
+import re
 from xml.dom.minidom import Document
 from django.shortcuts import redirect, render
 from django.contrib.auth.models import User
@@ -10,7 +12,7 @@ from matplotlib.pyplot import close
 from matplotlib.style import use
 from numpy import empty, size
 from rsa import PublicKey, sign
-from hospital.models import Doctor, Documents, Patient
+from hospital.models import Doctor, Documents, Hospital, Insurance, Patient, Pharmacy
 import rsa
 from django.core.files import File
 import phonenumbers
@@ -28,7 +30,23 @@ def login_signup(request):
     if request.user.is_anonymous:
         return redirect("/login")
     return render(request,'login_signup.html')
+def userType(user):
+    pat=[]
+    doc=[]
+    phar=[]
+    for p in Patient.objects.all():
+        pat.append(str(p.mobile))
+    for d in Doctor.objects.all():
+        doc.append(str(d.mobile))
+    for ph in Pharmacy.objects.all():
+        phar.append(str(ph.mobile))
 
+    if user.username in pat:
+        return "patient"
+    if user.username in doc:
+        return "doctor"
+    if user.username in phar:
+        return "pharmacy"
 def loginUser(request):
     if request.method=="POST":
         #check credentials
@@ -44,6 +62,17 @@ def loginUser(request):
                 #otp = sendOTP(username)
 
                 #
+                type=userType(user)
+                print("DOCTOR?",user.username)
+                if(type=="patient" and not Patient.objects.get(mobile=user.username).verified):
+                    messages.warning(request, 'Profile yet to be verified by admin, contact admin at ritick20460@iiitd.ac.in')
+                    return redirect("/login")
+                if(type=="doctor" and not Doctor.objects.get(mobile=user.username).verified):
+                    messages.warning(request, 'Profile yet to be verified by admin, contact admin at ritick20460@iiitd.ac.in')
+                    return redirect("/login")
+                if(type=="pharmacy" and not Pharmacy.objects.get(mobile=user.username).verified):
+                    messages.warning(request, 'Profile yet to be verified by admin, contact admin at ritick20460@iiitd.ac.in')
+                    return redirect("/login")
                 otp = 123456
                 #
 
@@ -204,6 +233,94 @@ def signupDoctor(request):
         
     return render(request,'signupDoctor.html')
 
+def signupOrganization(request):
+    userType = request.POST.get("userType")
+    if(request.method=="POST" and userType=="Pharmacy"):
+        name = request.POST.get("name")
+        city = request.POST.get("city")
+        state = request.POST.get("state")
+        street = request.POST.get("street")
+        email = request.POST.get("email")
+        phone = request.POST.get("phone")
+        dp1 = request.FILES["dp1"]
+        dp2 = request.FILES["dp2"]
+        medicines=[]
+        meds = request.POST.get("Aspirin")
+        meds2 = request.POST.get("Avomine")
+        meds3 = request.POST.get("Zerodol")
+        meds4 = request.POST.get("Yees")
+        meds5 = request.POST.get("Oflox")
+        meds6 = request.POST.get("Voveran")
+        meds7 = request.POST.get("Glycomet")
+        meds8 = request.POST.get("Isolazine")
+        meds9 = request.POST.get("Naxdom")
+        meds10 = request.POST.get("Roseday10")
+        if(meds is not None):
+            medicines.append(meds)
+        if(meds2 is not None):
+            medicines.append(meds2)
+        if(meds3 is not None):
+            medicines.append(meds3)
+        if(meds4 is not None):
+            medicines.append(meds4)
+        if(meds5 is not None):
+            medicines.append(meds5)
+        if(meds6 is not None):
+            medicines.append(meds6)
+        if(meds7 is not None):
+            medicines.append(meds7)
+        if(meds8 is not None):
+            medicines.append(meds8)
+        if(meds9 is not None):
+            medicines.append(meds9)
+        if(meds10 is not None):
+            medicines.append(meds10)
+        
+        print("meds",medicines)
+        accno = request.POST.get("acc")
+        holder = request.POST.get("holder")
+        ifsc = request.POST.get("ifsc")
+
+        license = request.FILES["license"]
+        password = request.POST.get("password")
+        desc = request.POST.get("desc")
+
+        medList = json.dumps(medicines)
+        pharmacyUser = User.objects.create_user(str(phone), email, password)
+        pharmacyUser.first_name = name
+        pharmacyUser.save()
+
+        pharmacy = Pharmacy(user=pharmacyUser,medicineList=medList,description=desc,accountNumber=accno,IFSC=ifsc,accountHolder=holder,license=license,pic1=dp1,pic2=dp2,name=name,email=email,state=state,city=city,street=street,mobile=phone,type=userType,verified=False)
+        pharmacy.save()
+
+        # #sign the document
+        pharmacy = Pharmacy.objects.get(mobile=phone)
+
+        identitySign,publicKey = signDocs(pharmacy.license.path)
+        
+
+        slash = pharmacy.license.name.rfind('/')
+        dot = pharmacy.license.name.find('.')
+        keyName = "publickey"+str(pharmacy.mobile)+pharmacy.license.name[slash+1:dot]+".key"
+        with open ('static/Pharmacy/Keys/'+keyName,'wb') as key_file:
+            key_file.write(publicKey.save_pkcs1('PEM'))
+        
+        print(type(identitySign))
+        pharmacy.identitySign = str(identitySign,'latin-1')#storing signature(bytes) as string
+        pharmacy.publicKey = key_file.name
+        pharmacy.save()
+        messages.success(request, 'Pharmacy Signed Up Successfully')
+        #verifying
+        # pharmacy = Pharmacy.objects.get(mobile=phone)
+        # signFile = doctor.identitySign
+
+        # pubkey = rsa.PublicKey.load_pkcs1(open(doctor.publicKey.name,'rb').read())
+        # doc = open(doctor.license.name,'rb').read()
+        # close(doctor.license.name)
+        # close(doctor.publicKey.name)
+     
+        # verify(doc,bytes(signFile,'latin-1'),pubkey)
+    return render(request,'signupOrganization.html')
 
 def phoneNumber(request):
     
@@ -267,6 +384,37 @@ def phoneNumberDoctor(request):
     
     return render(request,'phoneNumberDoctor.html')
 
+def phoneNumberOrg(request):
+    
+    if(request.method=="POST" and request.POST.get('phone') is not None):
+        phone = request.POST.get('phone')
+        allUsers = []
+        for user in get_user_model().objects.all():
+            allUsers.append(user.username)
+            print(allUsers)
+
+        if(phone in allUsers):
+            print("Phone number already used, not registered")
+            messages.warning(request, 'Phone number already used, not registered')
+            return redirect('phoneNumberOrg')
+
+        if(not validatePhone("+91"+phone)):
+            print("Phone number Invalid!!, not registered")
+            messages.warning(request, 'Phone number Invalid!!, not registered')
+            return redirect('phoneNumberOrg')
+        else:
+            print("Entered phone no is",phone)
+            # otp = sendOTP(phone)
+
+            #
+            otp = 123456
+            #
+
+            print('sent otp is GOING TO DOCTOR OTP',otp)
+            return render(request,'orgOtp.html',{'phone':phone,'realOtp':str(otp)})
+    
+    return render(request,'phoneNumberOrg.html')
+
 
 
 def patientOtp(request):
@@ -321,6 +469,39 @@ def doctorOtp(request):
                 return render(request,'doctorOtp.html')
     return render(request,'doctorOtp.html')
 
+def orgOtp(request):
+    if(request.method=="POST"):
+        phone = request.POST.get('phone')
+        otp = request.POST.get('otp')
+        print("username" , phone)
+        print("otp" ,otp)
+        if phone is None:
+            return redirect('signup')
+
+        else:
+            #legit user trying to register lets verify otp
+            otp = request.POST.get('otp')
+            realOtp = request.POST.get('realOtp')
+            #
+            realOtp = otp
+            #
+            print(realOtp)
+            print(otp)
+            if(otp==realOtp):
+                return render(request,'chooseOrg.html',{'phone':phone})
+            else:
+                messages.warning(request, 'OTP mismatch, enter again')
+                logoutUser(request)
+                return render(request,'orgOtp.html')
+    return render(request,'orgOtp.html')
+
+def chooseOrg(request):
+    
+    if(request.method=='POST'):
+        phone = request.POST.get('phone')
+        type = request.POST.get('type')
+        return render(request,'signupOrganization.html',{'type':type,'phone':phone})
+    return render(request,'chooseOrg.html')
 
 def verify(doc,signature,pubkey):
     try:
@@ -516,6 +697,8 @@ def doctorDashboard(request):
 
 def countPatients(request,context):
     context['numPatients'] = Patient.objects.all().count()
+    context['numDoctors'] = Doctor.objects.all().count()
+    context['numPharmacy'] = Pharmacy.objects.all().count()
     return context
 
 def adminPage(request):
@@ -524,12 +707,14 @@ def adminPage(request):
     context = {
             'loggedinPatient' : 'NULL',
             'allUsers' : get_user_model().objects.all().values(),
-            'numPatients' : 0
+            'numPatients' : 0,
+            'numDoctors' : 0,
+            'numPharmacy' : 0
         }
     
     context = countPatients(request,context)
     context = getLoggedinPatient(request,context)
-    
+    print(context)
     return render(request,'admin.html',context)
 
 def adminPatient(request):
@@ -580,6 +765,106 @@ def adminPatient(request):
     return render(request,'adminPatient.html',context)
 
 
+def adminDoctor(request):
+    if request.user.is_anonymous or request.user.is_superuser==0:
+        return redirect("/login")
+    if(request.method=="POST"):
+        for keys in request.POST:
+            if(keys=='verifyDoctor'):
+                patientUsername = request.POST[keys]
+                patientModel = Doctor.objects.get(mobile=patientUsername)
+                print(patientModel.verified)
+                patientModel.verified = True
+                patientModel.save()
+            if(keys=='deleteDoctor'):
+                patientUsername = request.POST[keys]
+                patientModel = Doctor.objects.get(mobile=patientUsername)
+                patientUser = get_user_model().objects.get(username=patientUsername)
+                patientModel.delete()
+                patientUser.delete()
+            if(keys=='verifyLicense'):
+                patientUsername = request.POST[keys]
+                patientModel = Doctor.objects.get(mobile=patientUsername)
+                signFile = patientModel.identitySign
+                pubkey = rsa.PublicKey.load_pkcs1(open(patientModel.publicKey.name,'rb').read())
+                doc = open(patientModel.license.name,'rb').read()
+                close(patientModel.license.name)
+                close(patientModel.publicKey.name)
+                success = verify(doc,bytes(signFile,'latin-1'),pubkey)
+                if(success):
+                    patientModel.signVerified = 1
+                else:
+                    patientModel.signVerified = 2
+                patientModel.save()
+    # for key in Patient.objects.all().values():
+    #     print(key)
+    verifyDoc = {'original':'xyz.pdf',
+                'signature':'sign',
+                'public_key':'pub'
+                }
+    context = {
+            'loggedinPatient' : 'NULL',
+            'numPatients' : 0,
+            'numDoctors' : 0,
+            'numPharmacy' : 0,
+            'doctorList' : Doctor.objects.all().values()
+        }
+    context = countPatients(request,context)
+    context = getLoggedinPatient(request,context)
+    
+    return render(request,'adminDoctor.html',context)
+
+def adminPharmacy(request):
+    if request.user.is_anonymous or request.user.is_superuser==0:
+        return redirect("/login")
+    if(request.method=="POST"):
+        for keys in request.POST:
+            if(keys=='verifyPharmacy'):
+                patientUsername = request.POST[keys]
+                patientModel = Pharmacy.objects.get(mobile=patientUsername)
+                print(patientModel.verified)
+                patientModel.verified = True
+                patientModel.save()
+            if(keys=='deletePharmacy'):
+                patientUsername = request.POST[keys]
+                patientModel = Pharmacy.objects.get(mobile=patientUsername)
+                patientUser = get_user_model().objects.get(username=patientUsername)
+                patientModel.delete()
+                patientUser.delete()
+            if(keys=='verifyLicense'):
+                patientUsername = request.POST[keys]
+                patientModel = Pharmacy.objects.get(mobile=patientUsername)
+                signFile = patientModel.identitySign
+                pubkey = rsa.PublicKey.load_pkcs1(open(patientModel.publicKey.name,'rb').read())
+                doc = open(patientModel.license.name,'rb').read()
+                close(patientModel.license.name)
+                close(patientModel.publicKey.name)
+                success = verify(doc,bytes(signFile,'latin-1'),pubkey)
+                if(success):
+                    patientModel.signVerified = 1
+                else:
+                    patientModel.signVerified = 2
+                patientModel.save()
+    # for key in Patient.objects.all().values():
+    #     print(key)
+    verifyDoc = {'original':'xyz.pdf',
+                'signature':'sign',
+                'public_key':'pub'
+                }
+    context = {
+            'loggedinPatient' : 'NULL',
+            'numPatients' : 0,
+            'numDoctors' : 0,
+            'numPharmacy' : 0,
+            'pharmacyList' : Pharmacy.objects.all().values()
+        }
+    context = countPatients(request,context)
+    context = getLoggedinPatient(request,context)
+    
+    return render(request,'adminPharmacy.html',context)
+
+
+
 
 
 def otpVerif(request):
@@ -601,6 +886,7 @@ def otpVerif(request):
             #
             print(realOtp)
             print(otp)
+            
             if(otp==realOtp and user in getallPatientUsernames()):
                 for patient in Patient.objects.all():
                     if str(patient.mobile) == user:
@@ -654,3 +940,71 @@ def editPatient(request):
         messages.success(request, 'Profile updated')
 
     return render(request, 'editPatient.html', context)
+
+
+
+def fillContext(context):
+    list = []
+    for user in get_user_model().objects.all():
+        list.append(user)
+    context['allUsers'] = list
+
+    list = []
+    for user in Patient().objects.all():
+        list.append(user)
+    context['allPatients'] = list
+
+    list = []
+    for user in Doctor().objects.all():
+        list.append(user)
+    context['allDoctors'] = list
+
+    list = []
+    for user in Hospital().objects.all():
+        list.append(user)
+    context['allHospital'] = list
+    
+    list = []
+    for user in Pharmacy().objects.all():
+        list.append(user)
+    context['allPharmacy'] = list
+
+    list = []
+    for user in Insurance().objects.all():
+        list.append(user)
+    context['allInsurance'] = list
+
+    list = []
+    for user in Documents().objects.all():
+        list.append(user)
+    context['allDocs'] = list
+
+    print(context)
+    return context
+
+
+################
+# def patientShare(request):
+
+    # context = {
+    #         'loggedinPatient' : 'NULL',
+    #         'allUsers' : 'NULL',
+    #         'allDoctors' : 'NULL', 
+    #         'allPatients' : 'NULL', 
+    #         'allHospital' : 'NULL',
+    #         'allPharmacy' : 'NULL',
+    #         'allInsurance' : 'NULL',
+    #         'allDocs' : 'NULL'
+    #     }
+    # context = getLoggedinPatient(request,context)
+    # context = fillContext(context)
+    # if request.user.is_anonymous or context['loggedinPatient']=='NULL':
+    #     return redirect("/login")
+    
+    # if(request.method=="POST"):
+    #     #we got some users to add in share with of given doc
+
+
+
+
+    # return render(request, 'patientShare.html', context)

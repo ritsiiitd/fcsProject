@@ -32,10 +32,10 @@
 
       {% comment %} LOGIN {% endcomment %}
       <main class="container form-signin w-100 m-auto my-4">
-        <form method="POST" action="/phoneNumber">
+        <form method="POST" action="/chooseOrg">
         {% csrf_token %}
           <img class="mb-4 mt-5 mt-5" src="/static/user_logo.png" alt="" width="72" height="57">
-          <h1 class="h3 mb-3 fw-normal">Welcome to Hospital Manager</h1>
+          <h1 class="h3 mb-3 fw-normal">Choose type of organization</h1>
       
           {% comment %} <div class="form-floating">
             <input type="email" class="form-control" id="floatingInput" placeholder="name@example.com">
@@ -51,16 +51,21 @@
               <input type="checkbox" value="remember-me"> Remember me
             </label>
           </div> {% endcomment %}
-          <input type="hidden" id="type" name="type" value="patient">
-          <button class="w-50 btn btn-lg btn-primary my-4" type="submit" name="Patient" value="Patient">Patient</button>
+          <input type="hidden" id="type" name="type" value='Hospital'>
+          <input type="hidden" id="phone" name="phone" value={{phone}}>
+          <button class="w-50 btn btn-lg btn-primary my-4" type="submit">Hospital</button>
         </form>
-        <form method="post" action="/phoneNumberDoctor">
+        <form method="post" action="/chooseOrg">
           {% csrf_token %}
-          <button class="w-50 btn btn-lg btn-primary my-4" type="submit">Doctor</button>
+          <input type="hidden" id="type" name="type" value='Pharmacy'>
+          <input type="hidden" id="phone" name="phone" value={{phone}}>
+          <button class="w-50 btn btn-lg btn-success my-4" type="submit">Pharmacy</button>
         </form>
-        <form method="post" action="/phoneNumberOrg">
+        <form method="post" action="/chooseOrg">
           {% csrf_token %}
-          <button class="w-50 btn btn-lg btn-primary my-4" type="submit">Organization</button>
+          <input type="hidden" id="type" name="type" value='Insurance'>
+          <input type="hidden" id="phone" name="phone" value={{phone}}>
+          <button class="w-50 btn btn-lg btn-danger my-4" type="submit">Insurance Firm</button>
           <p class="mt-5 mb-3 text-muted">© 2022–2023</p>
         </form>
       </main>

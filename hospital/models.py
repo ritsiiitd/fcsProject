@@ -73,7 +73,9 @@ class Hospital(models.Model):
     city = models.CharField(max_length=20)
     street = models.CharField(max_length=40)
     description = models.CharField(max_length=1000)
-
+    verified = models.BooleanField(default=False)
+    signVerified = models.IntegerField(default=0)
+    phoneVerified = models.IntegerField(default=0)
 
 class Pharmacy(models.Model):
 
@@ -95,6 +97,10 @@ class Pharmacy(models.Model):
     street = models.CharField(max_length=40)
     description = models.CharField(max_length=1000)
     medicineList = models.TextField(null=True)
+    verified = models.BooleanField(default=False)
+    signVerified = models.IntegerField(default=0)
+    phoneVerified = models.IntegerField(default=0)
+
 
 class Insurance(models.Model):
 
@@ -115,9 +121,13 @@ class Insurance(models.Model):
     city = models.CharField(max_length=20)
     street = models.CharField(max_length=40)
     description = models.CharField(max_length=1000)
+    verified = models.BooleanField(default=False)
+    signVerified = models.IntegerField(default=0)
+    phoneVerified = models.IntegerField(default=0)
 
 class Payment(models.Model):
     sender = models.CharField(max_length=40)
     receiver = models.CharField(max_length=40)
     amount = models.CharField(max_length=40)
     remarks = models.CharField(max_length=40)
+    status = models.BooleanField(default=False)
