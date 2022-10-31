@@ -30,6 +30,8 @@ urlpatterns = [
     path("patientOtp", views.patientOtp, name="patientOtp"),
     path("orgOtp", views.orgOtp, name="orgOtp"),
     path("editPatient", views.editPatient, name="editPatient"),
-    path("chooseOrg", views.chooseOrg, name="chooseOrg")
+    path("chooseOrg", views.chooseOrg, name="chooseOrg"),
+    path("patientShare", views.patientShare, name="patientShare"),
+    path("patientShare2", views.patientShare2, name="patientShare2"),
 
 ]

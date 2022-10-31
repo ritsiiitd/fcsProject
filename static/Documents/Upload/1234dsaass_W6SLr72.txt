@@ -1,0 +1,934 @@
+QUESTION 1:
+
+To represent an N-ary heap in an array, we traverse “level wise” from left to right on the heap and keep on storing the values of the nodes we encounter while traversing in an array until we encounter the last node of the heap. 
+We put the root of the heap at 0th index of the array(say arr), then all the n children of that root(if the root has n children) on next ‘n’ indices of the array and so on.
+
+Example : Let N = 4 and we have a N-ary max heap like this;
+
+				20
+		   
+		18	15	 6	11
+level wise traversal from left to right
+
+         10     5          2         1	
+
+
+arr = [ 20 , 18 , 15 , 6 , 11 ,10 , 5 , 2 , 1 ]
+
+
+Number of elements = d
+Maximum children a non-leaf node can have = n
+
+Lets say the height of N-ary heap is ‘h’
+
+Note:Considering the tree formed is a full tree and height of root is 1.
+
+
+For height= 1 (n^0), there is only one node(root)
+For height=2, there are n nodes(n^1) (children of root)
+For height=3, n^2 nodes
+……..
+For height = h, there are  n^(h-1) nodes
+
+So total number of nodes in a heap with height h = n^0 + n^1 + n^2 ….n^(h-1)
+d  =  n^0 + n^1 + n^2 ….n^(h-1)
+
+d  =  n^0( (n ^ h) - 1) / (n - 1)
+
+d(n-1) + 1  =  n^h
+
+logn [d(n-1) + 1] = h * logn n
+ 
+h  =  logn (d(n-1) + 1)
+
+Required relation
+
+
+
+
+Relation between parents and children in N-ary heap: Credits:https://www.geeksforgeeks.org/k-ary-heap/
+			
+Indices of Children of node at a particular index, say i
+n*i+1, n*i+2, n*i+3 upto n*i + n
+Index of Parent of node at index i
+(i - 1) / n
+
+ 
+
+EXTRACT MAX
+Algorithm Explanation:
+We are given array based implementation of N-ary heap , if we will traverse on this array( arr ), this is equivalent to traverse level wise on the N-ary heap from left to right.
+MAX is the root element, so we will delete the element at index 0 in the array and replace it with the last element in arr (this is also the last element in the N-ary heap).
+Now the root element (0th index element) is not the maximum element in the heap thereby not following the property of max heap. So we will move downwards from root and at each level compare root with its children on the next level and swap the root with the child having maximum value among all children only if that value is also greater than root.value.
+We will keep doing this recursively until all the children of the root are smaller than the root.
+
+
+	
+
+
+PSEUDOCODE
+
+		main:
+			//we are given arr[ ](array representation of N-ary heap)
+			
+			int len=arr.length;
+arr[ 0 ] = -1; //deleting root 
+			arr[ 0 ] = arr [ len-1]; //moving last element to root position
+			len - -; // the size of heap decreases after deletion
+
+
+			shift_to_correct_position_down( arr , len , 0 , n)
+ // this function will move the root value to its correct position
+
+		static void shift_to_correct_position_down( int [ ]arr, int len, int curr_pos , int n)
+		{
+			int currmax=arr[ curr_pos ]; // curr_pos stores the position of element to be shifted
+			Int child_index = -1 ; //stores index of child to be swapped
+			for(int i=1; i <= n && n*curr_pos + i < len ; i++){
+			//traverse on the children of a node only if its children exist in the array
+				int child_value=arr[ n* curr_pos + i ] //picking up child value 
+				if ( child_value > currmax) // means any child of node has value greater than the node
+				{
+					currmax= child_value;
+					child_index= n* curr_pos + i ;
+				}
+			}
+
+			if(child_index == -1) //no child found with max value
+			{
+				return;
+			}
+
+			else{
+				int temp=arr[curr_pos];
+				arr[curr_pos] = arr[ child_index ];
+				arr[ child_index ] = temp;
+
+			}
+		}
+
+
+TIME COMPLEXITY:
+Deleting the root and placing last element in its position takes O(1) time.
+In the worst case , while comparing the updated root with its children to find its correct position, there may be a case when the updated node has to be swapped with one of its child at each level. In this case the total number of comparisons and swaps will be equal to the height  of the N-ary heap.
+
+ So the total time complexity of the algorithm is : O(height) => O( logn (d(n-1)) )
+
+INSERT
+Algorithm Explanation:
+
+We need to insert a new node in the N-ary heap, which is equivalent to inserting a new element in the array arr.
+We are given that the array is sufficiently large to accommodate all elements so we do not need to increase the size of the array to insert an element.
+We will insert the new element at the last index of the array, which is equivalent to putting it as a new node at the end of the N-ary heap.
+Now we will move upwards from the newly inserted element, compare it with its parents, if new element is greater than its parent, we will swap both of them, and continue this process recursively until new_element <= parent.
+
+	PSEUDOCODE
+	
+main:
+			//we are given arr[ ](array representation of N-ary heap)
+			
+			int len=arr.length;
+int new_element = sc.nextInt(); // element to be inserted
+arr[ len-1 ] = new_element; // insert at the end of the array
+			
+
+
+		static void shift_to_correct_position_upwards(int[ ] arr , int curr_pos  ,int  n)
+		{	
+			// curr_pos = current index of newly inserted element
+
+			int curr_parent = (curr_pos - 1) / n;
+ // current index of parent of new_element
+
+if ( curr_parent < 0) //parent does not exist
+{
+	return;
+}
+
+if ( arr[ curr_pos] > arr[ curr_parent ] )
+{//new_element > parent
+	int temp = arr[ curr_pos];
+	arr[ curr_pos ] = arr[ curr_parent ];
+	arr[ curr_parent ] = temp;
+	shift_to_correct_position_upwards ( arr, curr_parent , n);
+}
+}
+
+TIME COMPLEXITY:
+Inserting a new element at the end of the array takes O(1) time as the array given is sufficiently large.
+In the worst case , we may have to compare the new_element to its ancestor at each level to shift it to its correct position, so the maximum number of comparisons for the insert algorithm is equal to the height of the N-ary heap.
+
+ So the total time complexity of the algorithm is : O(height) => O( logn (d(n-1)) )
+
+
+DECREASE KEY
+Algorithm Explanation:
+Go to index ‘ i ‘
+If arr[ i ] < k => ‘ERROR’
+else arr[ i ] = k
+This means we have updated the value at index ‘ i ‘ to value smaller than or equal to  its previous value, means now we will have to shift the node represented by index ‘ i ‘ in order to maintain the property of our ‘max’ N-ary heap.
+We will compare the element at index ‘ i ’ with its children if they exist and swap it with the largest children given it is also larger than the element at index ‘i ‘ /
+We will recursively do this until we find the correct position for the updated element of the N-ary max heap. 
+For this I will use the function declared in part b of this question.
+
+	void DECREASE_KEY(int[ ] A, int i,int k)
+	{	// n is given in question, consider it as global variable
+		if ( A[ i ] < k ){
+			System.out.println ( “Error : key less than value” );
+			return;
+		}
+		
+		A [ i ] = k;
+		
+		shift_to_correct_position_down( A,  A.length , i , n)
+
+	}
+	
+	static void shift_to_correct_position_down( int [ ]arr, int len, int curr_pos , int n)
+		{
+			int currmax=arr[ curr_pos ]; // curr_pos stores the position of element    to be shifted
+			int child_index = -1 ; //stores index of child to be swapped
+			
+for(int j=1; j <= n && n*curr_pos + j < len ; j++){
+			//traverse on the children of a node only if its children exist in the  array
+				int child_value=arr[ n* curr_pos + i ] //picking up child value 
+				if ( child_value > currmax) // means any child has value greater than the node value
+				{
+					currmax = child_value;
+					child_index  = n* curr_pos + i ;
+				}
+			}
+
+			if(child_index == -1) //no child found with max value
+			{
+				return;
+			}
+
+			else{
+				int temp=arr[curr_pos];
+				arr[curr_pos] = arr[ child_index ];
+				arr[ child_index ] = temp;
+
+			}
+		}
+
+TIME COMPLEXITY:
+.
+In the worst case , the root node is updated with a key smaller than the smallest element in the N-ary max heap. In this case the root element has to be shifted to the lowest level after comparing and swapping it with its maximum child at each level. So the totl number of comparisons becomes equal to the height of the N-ary heap.
+
+ So the total time complexity of the algorithm is : O(height) => O( logn (d(n-1)) )
+
+QUESTION 2:
+
+Algorithm Explanation:
+
+We have to find the lexicographically smallest seating arrangement.
+The idea is I will maintain a stack( implemented using Linked List with and any node in the stack  points to the node below it)  that will store the guests’ seating arrangement. The latest guest will be farthest from Dumbledore and he/she will be on the top of the stack.
+As soon as a new guest arrive, I will see if this new guest is smaller than the previous guest(guest on top of stack), if yes then I will disappear the previous guest as long as k>0(k = number of guests we can disappear) , after disappearing the a guest I will check if the guest previous to that (again guest on top of stack) is also bigger than the new guest (k>0) and so on until any previously seated guest smaller than the new guest is found or the stack is empty or k<=0.
+Now I will place the new gust on the top of the stack.
+This will continue until ‘#’ is pushed as a guest,’#’ marks the closing of gates.
+After gates are closed I will disappear some more guests if k>0 until k<=0 to make string even smaller
+Finally, my stack contains guests seated in such a way that
+Starting from the bottom of the stack to the top, if guests are joined, the string formed is lexicographically smallest.
+
+Code:
+ [k is taken as input first, ‘#’ marks closing of gates, guests are to be given one by one as input(space seperated or line separated)]
+
+import java.util.*;
+public class ddore {
+    class stacknode{
+        char data;
+        stacknode prev;
+ 
+        stacknode(char data){
+            this.data=data;
+            prev=null;
+        }
+    }
+    stacknode top=null;
+ 
+    void push(char data){
+        stacknode newguest = new stacknode(data);
+        newguest.prev=top; //now newguest is the topmost element i.e newguest is the latest guest arrived
+        top=newguest;
+    }
+ 
+    void pop(){
+        if(top!=null){
+            top=top.prev;
+        }
+    }
+ 
+    char latestguest(){
+        return top.data;
+    }
+    int currentnumberofguests(){
+        int c=0;
+        stacknode temp=top;
+        while(temp!=null){
+            c++;
+            temp=temp.prev;
+        }
+        return c;
+    }
+    void display(){
+        char a[]=new char[currentnumberofguests()];
+        int i=a.length-1;
+        while(top!=null){
+            a[i]=latestguest();
+            pop();
+            i--;
+        }
+        for(int j=0;j<a.length;j++){
+            System.out.print(a[j]+" ");
+        }
+    }
+ 
+    public static void main(String[] args) {
+        Scanner sc=new Scanner(System.in);
+        int k=sc.nextInt();
+        ddore seated=new ddore(); // stack showing the guests who have taken seats, with the topmost guest farthest from dumbledore
+        char incomingguest=sc.next().charAt(0);
+        while(incomingguest!='#'){// '#' marks the closure of gates, hence when # is entered means all the guests have arrived
+             
+            if(seated.top==null){//placing first guest in stack 'seated'
+                seated.push(incomingguest);
+            }
+            else{
+                char lastguest=seated.latestguest();// gives the latest guest arrived before incomin guest
+                
+                while(lastguest>incomingguest && k>0){ // we can vanish some guests as long as k>0 to make our string lexicographically smallest
+                    seated.pop();
+ 
+                    k--;
+                    if(seated.top==null){
+                        break; //all guests in the stack are disappeared
+                    }
+                    lastguest=seated.latestguest();
+                }
+                seated.push(incomingguest);// let the newest guest sit (push in stack)
+ 
+            }
+            incomingguest=sc.next().charAt(0);//taking next guest input
+        }
+ 
+        while(k>0){ // if even after closure of gates, k > 0 means we can make our string even smaller by some more guests
+            seated.pop();
+            k--;
+        }
+        seated.display(); //display finally seated guests
+    }
+} 
+
+
+TIME COMPLEXITY:
+Let number of guests to arrive = n
+For every guest we either pop some previously placed guests and push it in stack, or directly push it.
+No matter what we can only remove k guests, so the inner while loop in main function does not run k times for every guest, instead it will run just k times for the entire duration of the incoming of guests. So it can be considered O(k) but it has no effect as n > k.
+Push : O( 1 ) as we only update two pinters
+Pop: O( 1 ) as only the top element is removed
+latestguest : O( 1 )
+Display : O( n - k ) => O(n)
+
+Overall Time complexity => O(n)[placing guests one by one] + O(k)[removing k guests] + O(n)[for finding size of stack]+ O(n)[display] = = > O(n)
+
+
+
+Data Structure Used : Stack
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+QUESTION 3:
+Let the customers in the waiting area be given in form of an array arr.
+I will form a binary min heap from the given arr in O(nlogn) time using insert function.
+
+For alpha, if he calls the minimum element , delete function will give the minimum element and we will delete that element from arr and update heap in O(logn) time.
+For maximum element we will check the leaf nodes of the heap for the maximum element as only leaf nodes have the potential to be maximum in O(n) and replace the maximum element with last element of heap and update heap accordingly using shift_up function in O(logn) time
+.
+For beta, we will perform delete root node operation on the heap k times to get the kth smallest element and keep on adding the deleted elements in another array O(k logn), after kth deletion we will insert back all deleted elements except kth minimum element(k log n).
+
+For gamma we will perform delete operation (n +1 / 2) times on the heap, similar to algorithm of beta but here k will be (n +1 / 2) ; in time O(nlogn) and store deleted elements in another array, after the last deletion we will insert back all elements from the array except the last deleted element in the min heap; time for it will beO(nlogn).
+
+CODE:
+[inputs to the codes are self explanatory, but initially number of customers and their ids should be inputted]
+
+import java.util.Scanner;
+ 
+public class dsaassq3 {
+    static int []minheap;
+    static int heapsize=0;
+ 
+    static void swap(int p1,int p2){
+        int t=minheap[p1];
+        minheap[p1]= minheap[p2];
+        minheap[p2]=t;
+    }
+    static void shift_up(int pos){
+        int parent=(pos-1)/2;
+        if(parent<0){
+            return;
+        }
+        if(minheap[parent]>minheap[pos]){
+            swap(pos,parent);
+            shift_up(parent);
+        }
+    }
+    static void shiftdown(int pos){
+        if(pos>=heapsize){
+            return;
+        }
+        int leftchild=2*pos+1;
+        int rightchild=2*pos+2;
+        int minele=Integer.MAX_VALUE; //minimum element
+        int repidx=-1; //to be replaced index
+        if(leftchild>=heapsize && rightchild>=heapsize){
+            return;
+        }
+        if(leftchild<heapsize){
+            minele=minheap[leftchild];
+            repidx=leftchild;
+        }
+        if(rightchild < heapsize && minheap[rightchild]<minele){
+            minele=minheap[rightchild];
+            repidx=rightchild;
+        }
+        if(minheap[pos]<=minele){
+            return;
+        }
+        swap(repidx,pos); //a child exists which has value less than root(parent)
+        shiftdown(repidx);
+    }
+    static void delete(){
+        if(heapsize<=0){
+            return;
+        }
+        
+        swap(0, heapsize-1);
+        heapsize--;
+        shiftdown(0);
+    
+ 
+    }
+    static void insert(int x,int pos){
+        minheap[pos]=x;
+        shift_up(pos);
+    }
+    static void displayheap(){
+        System.out.print("Customers => ");
+        for (int i = 0; i < heapsize; i++) {
+            System.out.print(minheap[i]+" ");
+        }
+    }
+    public static void main(String[] args) {
+ 
+        Scanner sc=new Scanner(System.in);
+        int numberofcust=sc.nextInt();//take customers
+        int cust[]=new int[numberofcust];
+        for (int i = 0; i < cust.length; i++) {
+            cust[i]=sc.nextInt();
+        }
+        minheap=new int[numberofcust];
+        for (int i = 0; i < cust.length; i++) {
+            heapsize++;
+            insert(cust[i],i);// making of min heap O(nlogn)
+        }
+        displayheap();
+        System.out.println();
+        System.out.println("enter barber name");
+        String barber=sc.next();
+        if(barber.equalsIgnoreCase("alpha")){
+            System.out.println("Max or min");
+            String choice=sc.next();
+            if(choice.equalsIgnoreCase("max")){
+                //we will check maximum only amongst leaf nodes, i.e all elements in right half of array
+                int max=minheap[heapsize/2];
+                int maxindex=-1;
+                for(int i=heapsize/2+1;i<heapsize;i++){ // O(n)
+                    if(max<minheap[i]){
+                        max=minheap[i];
+                        maxindex=i;
+                    }
+                }
+                System.out.println("customer called has id = "+max);
+                swap(heapsize-1, maxindex);
+                heapsize--;//deleted the maximum element from heap
+                shift_up(maxindex);//the updated value at this index which is bascically the last element of heap may be smaller than its new parent O(log n)
+                displayheap();
+            }
+            else if(choice.equalsIgnoreCase("min")){
+                System.out.println("customer called has id = "+minheap[0]);
+                delete();// O(log n)
+                displayheap();
+            }
+        }
+ 
+        if(barber.equalsIgnoreCase("beta")){
+            System.out.println("enter the value of k");
+            int k=sc.nextInt();
+            int backuparr[]=new int[k];//to store the deleted elements we have to pushback after kth minimum element is deleted
+            for (int i = 0; i < k; i++) { //O(klogn)
+                backuparr[i]=minheap[0];
+                delete();
+                
+            }
+            System.out.println("customer called has id = "+backuparr[k-1]);
+            int endindex=heapsize;
+            for( int i=endindex;i<endindex+k-1;i++){//O(klogn)
+                
+                //insert k-1 elements again in the heap
+                insert(backuparr[i-endindex], i);//insert at end of the heapand update accordingly
+                heapsize++;
+            }
+            displayheap();
+        }
+        if(barber.equalsIgnoreCase("gamma")){
+            //deleting median
+            int k=(heapsize+1)/2 ;// median element = (n+1) / 2 th element
+            int backuparr[]=new int[k];//to store the deleted elements we have to pushback after kth minimum element is deleted
+            for (int i = 0; i < k; i++) { //O(nlogn)
+                backuparr[i]=minheap[0];
+                delete();
+                
+            }
+            System.out.println("customer called has id = "+backuparr[k-1]);
+            int endindex=heapsize;
+            for( int i=endindex;i<endindex+k-1;i++){//O(nlogn)
+                
+                //insert k-1 elements again in the heap
+                insert(backuparr[i-endindex], i);//insert at end of the heapand update accordingly
+                heapsize++;
+            }
+            displayheap();
+        }
+    }
+}
+ 
+
+TIME COMPLEXITY:
+n=> number of customers
+For shift_up =>O(logn)
+For  shiftdown => O(logn) 
+
+For displayheap()=>O(n)
+
+For creating min heap=> O(nlogn)
+
+For alpha=>  max choice: O(n) + O(logn) =>O(n)
+		Min choice: O(log n)
+
+For beta=>   O(klogn) + O(klogn) => O(klogn) 
+
+For gamma = > O(nlogn) +O(nlogn) => O(nlogn)  
+
+Overall Time complexity ( k is always less than n)  => O(nlogn)
+
+Data Structure used: BINARY MIN HEAP
+
+
+QUESTION 4:
+
+Algorith Explanation:
+We are given root or a binary tree and two of its nodes representing two students.
+For each student the function ‘level_parent’ is called which returns an object of class levelandparent (like a pair class) , this object contains a variable parent which points to the parent of a particular node and a variable level which stores the level of a particular node[ root is at level 1].
+If for two students level is same, but parents are different, I will print Yes otherwise print No.
+We will traverse on the pairs of students given to us and check if a pair can form a team or not.
+In the level_parent function, we perform tree-traversal on the given binary tree until we found the student node and the parent / level are maintained in the parameters accordingly.
+
+	CODE:
+[ I have made a sample binary tree to show the function of the algorithm ,  no input	is being taken.]
+
+ 
+/**
+ * dsaass2ques4
+ */
+public class dsaass2ques4 {
+ 
+    levelandparent level_parent(binnode root,binnode student, binnode parent, int level){
+        
+        if(root==null){
+            levelandparent lp=new levelandparent();
+            return lp; 
+        }
+        if(root == student){
+            // student node is found
+            levelandparent lp=new levelandparent();
+            lp.parent=parent;
+            lp.level=level;
+            return lp;
+        }
+ 
+        levelandparent lpl=level_parent(root.left, student, root, level+1);
+        levelandparent lpr=level_parent(root.right, student, root, level+1);
+ 
+        if (lpl.level != 0){
+            //means we have found the student in left subtree
+            return lpl;
+        }
+        //student is in the right subtree
+        return lpr;
+    }
+    public static void main(String[] args) {
+        dsaass2ques4 tree=new dsaass2ques4();
+        binnode a=new binnode(1);
+        binnode b= new binnode(2);
+        binnode c=new binnode(3);
+        binnode d= new binnode(4);
+        binnode e=new binnode(5);
+        binnode f=new binnode(6);
+        binnode g= new binnode(7);
+        binnode h=new binnode(8);
+        binnode i= new binnode(9);
+        binnode j=new binnode(10);
+        binnode k= new binnode(11);
+        a.left=b;
+        a.right=c;
+        b.left=d;
+        b.right=e;
+        e.right=g;
+        e.left=f;
+        c.left=h; 
+        c.right=i;
+        i.left=j;
+        binnode root=a;
+        binnode [][]pair_of_students={{b,c},{g,j},{f,j},{d,e},{d,i}}; //pairs of students given
+        for(int pointer=0;pointer<pair_of_students.length;pointer++){
+            binnode student1=pair_of_students[pointer][0];
+            binnode student2=pair_of_students[pointer][1];
+            levelandparent st1=tree.level_parent(root, student1, null, 1); 
+            levelandparent st2=tree.level_parent(root, student2, null, 1);
+            boolean team_up=((st1.level==st2.level) && (st1.parent != st2.parent)); //condition check for forming a team
+            
+            if(team_up)
+            System.out.println("Yes");
+            else
+            System.out.println("No");
+        }
+        
+    }
+}
+ 
+class binnode{
+    binnode left,right;
+    int data;
+    binnode(int data){
+        this.data=data;
+        left=null;
+        right=null;
+    }
+}
+class levelandparent{
+    binnode parent;
+    int level;
+ 
+    levelandparent(){
+        parent=null;
+        level=0;
+    }
+}
+
+
+
+
+TIME COMPLEXITY:
+
+For a pair of students, the function level/-parent is called twice.
+
+Let the number of nodes in the tree is ‘n’
+
+Function ‘level_parent’ has complexity O(n) as in the worst case the student may be present on the rightmost bottom node of the binary tree. In this case we will have to go to each node of the tree until we finally reach the student.
+
+Overall Time Complexity=> O(n)+O(n) ⇒ O( n )
+
+Note: If we are given k pair of students, the complexity becomes O(kn)
+
+
+Data Structure used: BINARY TREE
+
+
+For our algorithm only ‘two’  tree traversals are required for a pair of students; one for each student. 
+In a single traversal ‘level_parent’ function computes level of a node as well as finds its parent and return accordingly.
+
+If we are given ‘k’ pairs initially, we require 2*k tree traversals.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+QUESTION 5:
+Given n nodes in a list, i will traverse and reach the right half of the list (n+1)/2 elements from left because in each recursive call I will arrange 2 nodes in the required manner and if the number of nodes is odd, the middle node will already be arranged thats why I will not touch it, if nodes are even in number, n+1 /2 will partition the list in two halves, so in every call 2 elements will be arranged and total number of calls will be equal to half the number of nodes.
+Example: given a list  1->2->3->4->5->6->7->8
+				|
+			        temp
+				
+	Using for loop, next pointer will move till (8+1)/2 = 4 next places i.e to 5
+1->2->3->4->5->6->7->8
+		          |
+       temp
+	
+Now calling updateList starting from 5
+
+	endpointer=5	startpointer=4 ,  nexttostart=5 => 1 -> 8 -> 2 -> 7 ->3 -> 6 -> 4 -> 5   
+							
+		|
+
+	endpointer=6  startpointer=3 ,  nexttostart=4 => 1 -> 8 -> 2 -> 7 ->3 -> 6 -> 4
+
+		|
+
+endpointer=7	startpointer=2  nexttostart=3, => 1 -> 8 -> 2 -> 7 ->3
+
+		|
+
+	endpointer=8   startpointer=1, nexttostart=2, ⇒  1 -> 8 -> 2 : 
+	|		return
+
+	endpointer=null : 
+
+
+
+
+CODE:[ give number of nodes, and integer nodes]
+
+import java.util.Scanner;
+ 
+public class dsaassq5 {
+ 
+    static Nodesll head=null;
+    static Nodesll startpointer=null;
+    static void updateList(Nodesll endpointer) {
+        if (endpointer == null) {
+            startpointer = head;
+            return;
+        }
+        updateList(endpointer.next);
+        Nodesll nexttostart = startpointer.next;
+        startpointer.next = endpointer;
+        endpointer.next = nexttostart;
+        startpointer = nexttostart;
+        if (startpointer.next == endpointer) {
+            startpointer.next = null;
+        }
+    }
+    static void display(Nodesll t){
+        Nodesll temp=t;
+        while(temp!=null){
+            if(temp.next==null){
+                System.out.print(temp.data);
+            }
+            else{
+            System.out.print(temp.data+" -> ");
+            }
+            temp=temp.next;
+        }
+    }
+ 
+    public static void main(String[] args) {
+        Scanner sc=new Scanner(System.in);
+        int n=sc.nextInt();
+        Nodesll tail=null;
+        for (int i = 0; i < n; i++) {
+            int data=sc.nextInt();
+            Nodesll newnode=new Nodesll(data);
+            if(i==0){
+                head=newnode;
+                tail=newnode;
+            }
+            else{
+                tail.next=newnode;
+                tail=newnode;
+            }
+        }
+    
+        //move to node the endpointer half of list
+        Nodesll temp=head;
+        for (int i = 0 ; i < (n + 1) / 2 ; i++) {
+            temp = temp.next;
+        }
+        updateList(temp);
+        display(head);
+    }
+}
+class Nodesll{
+    int data;
+    Nodesll next;
+    Nodesll(int data){
+        this.data=data;
+    }
+}
+
+
+
+TIME COMPLEXITY:
+
+ 
+ 
+//The first (n+1)/2 items in list are traversed in the for loop and the and the remaining in the recursive calls so overall “n” items are traversed making the complexity O(n)
+
+
+Data Structure used: Singly Linked List
+
+
+QUESTION 6:
+a)
+
+Algorithm:
+I will traverse on each player( i ) in the list, and for each such player traverse again from its next neighbour till the end of list until I find a ‘friend’ for this ith player or the list is exhausted.
+This will use two for loops, so for ith element we have to check n-i elements for friend, suppose n players
+So for i=1, 4 players are checked 
+For i=2 , 3 players are checked
+For i=n-1… 1 player is checked
+So total number of checks = = >  1+ 2 + 3 + …. (n-1) = n(n-1) / 2
+ 
+ thats why time complexity of this algorithm is O(n^2)
+
+PSEUDOCODE:
+
+b)
+[Algorithm idea taken from: https://www.geeksforgeeks.org/next-greater-element/]
+
+The idea is, we will traverse once over all the players in the array, keep storing them in a stack so that the as soon as a player’s match value is greater than the top element, the friend of player in stack is found while traversing, The stack will store those players whose friend is yet to be found.
+When the friend is found for the player on top of stack, it is popped and top is checked again until the stack is empty or the match value of player on top is greater than the proposed friend.
+
+If the stack is not empty after all the elements are traversed, then the elements present in the stack do not have any maximum neighbour.
+
+Algorithm:
+Push first element in the stack, stack will also maintain the indices of elements in an array.
+Traverse
+Compare element on top with i th element in traversal, if a[i]> stack[top], pop from stack, this ith element is the friend to top element, store the index of this element in answer array.
+Keep popping elements from stack while a[i]>stack[top], and keep updating answer array
+Push i th  element.
+After traversal is complete, check if the stack is empty, if not all those elements in stack is not able to make a friend.
+	
+Data Structure used: STACK
+
+CODE:[ give number of players, and match values]
+
+import java.util.Scanner;
+ 
+public class dsaassques6 {
+    static int ans[];
+    
+    public static void main(String[] args) {
+        Scanner sc=new Scanner(System.in);
+        int x=sc.nextInt();
+        int []players=new int[x];
+        for (int i = 0; i < x; i++) {
+            players[i]=sc.nextInt();
+        }
+        //9
+        //2 5 9 3 1 12 6 8 7     
+        ans=new int[x]; // this ans array will store index of friend with greater match value for ith index
+        stack s=new stack(x); //stack of size = number of players, to store the elements whose whose friends are yet to be found
+        s.push(players[0],0); // pust the first player's match value and its index in stack s
+        for(int i=1;i<x;i++){
+            int element=players[i]; // ith elements match value
+            int top_element=-1;
+            if(!s.isEmpty())
+            top_element=s.peek().ele; // match value of top players in stack if it exists
+ 
+            while(element > top_element && !s.isEmpty()){ // for certain player keep checking if it can be friend of multiple players that arrived before it in stack
+                ans[s.peek().idx]=i+1; // at original index of the top elem,ent store the index of friend in ans array // + 1 because indexing in question starts from 1     
+                s.pop(); // remove those players whose friend is found
+ 
+                if(!s.isEmpty())
+                top_element=s.peek().ele; // check for next player in stack
+            }
+ 
+            s.push(element, i); // finally push the ith player
+        }
+ 
+        while(s.isEmpty() == false){ // if there are some players still in stack, their friends do not exist 
+            ans[s.peek().idx]=-1; 
+            s.pop();
+        }
+        for (int i = 0; i < ans.length; i++) { // print the ans array
+            if(i==0)
+            System.out.print("[ "+ans[i]+", "); 
+            else if(i==ans.length-1)
+            System.out.print(ans[i]+" ]");
+            else
+            System.out.print(ans[i]+", ");
+        }
+    }    
+}
+ 
+class stack{ // stack that can store element and its index in two seperate arrays
+    int top;
+    int stk[];
+    int orgnl_index[];
+ 
+    stack(int size){
+        top=-1;
+        stk=new int[size];
+        orgnl_index=new int[size];
+    }
+    //no need to check overflow underflow for push pop peek as these are only called when stack is not empty and moreover stack cannot be filled over its length
+    void push(int element,int index){
+        top++;
+        stk[top]=element;
+        orgnl_index[top]=index;
+    }
+ 
+    void pop(){
+        top--;
+    }
+ 
+    pair peek(){
+        pair p=new pair(stk[top],orgnl_index[top]);
+        return p;
+    }
+    boolean isEmpty(){
+        return (top==-1);
+    }
+}
+class pair{ // for peek function to return two values, maqtch value and original index
+    int idx;
+    int ele;
+    pair(int ele,int idx){
+        this.idx=idx;
+        this.ele=ele;
+    }
+}
+ 
+
+
+
+
+TIME COMPLEXITY:
+
+For push => O( 1 )
+
+For pop => O( 1 )
+
+For peek => O( 1 )
+
+Over all T.C ⇒ O( n ) as each player is traversed only once to find its friend on right side.

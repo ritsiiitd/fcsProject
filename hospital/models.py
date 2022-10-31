@@ -4,6 +4,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+
 # Create your models here.
 class Patient(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE)
@@ -51,7 +52,7 @@ class Documents(models.Model):
     signature = models.CharField(max_length=1024,null=True)
     publicKey = models.FileField(upload_to='static/Documents/Keys',null=True,blank=True)
     owner = models.CharField(max_length=40,null=False)
-    sharedWith = models.TextField(null=True)
+    sharedWith = models.TextField(null=True,default="[""]")
 
 
 class Hospital(models.Model):

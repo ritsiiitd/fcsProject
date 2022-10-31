@@ -552,6 +552,12 @@ def getallDoctorUsernames():
     for p in Doctor.objects.values("mobile"):
         list.append(str(p['mobile']))
     return list
+def getallPharmacyUsernames():
+    list = []
+    for p in Pharmacy.objects.values("mobile"):
+        list.append(str(p['mobile']))
+    return list
+
 
 def patientUpload(request):
     if request.user.is_anonymous:
@@ -896,6 +902,11 @@ def otpVerif(request):
                 for doctor in Doctor.objects.all():
                     if str(doctor.mobile) == user:
                         return redirect("/doctorDashboard")
+            elif(otp==realOtp and user in getallPharmacyUsernames()):
+                print("doctor logged in")
+                for pharmacy in Pharmacy.objects.all():
+                    if str(pharmacy.mobile) == user:
+                        return redirect("/pharmacyDashboard")
             else:
                 messages.warning(request, 'OTP mismatch, login again')
                 logoutUser(request)
@@ -943,68 +954,173 @@ def editPatient(request):
 
 
 
-def fillContext(context):
+def fillContext(request,context):
     list = []
     for user in get_user_model().objects.all():
         list.append(user)
     context['allUsers'] = list
 
     list = []
-    for user in Patient().objects.all():
+    for user in Patient.objects.all():
         list.append(user)
     context['allPatients'] = list
 
     list = []
-    for user in Doctor().objects.all():
+    for user in Doctor.objects.all():
         list.append(user)
     context['allDoctors'] = list
 
     list = []
-    for user in Hospital().objects.all():
+    for user in Hospital.objects.all():
         list.append(user)
     context['allHospital'] = list
     
     list = []
-    for user in Pharmacy().objects.all():
+    for user in Pharmacy.objects.all():
         list.append(user)
     context['allPharmacy'] = list
 
     list = []
-    for user in Insurance().objects.all():
+    for user in Insurance.objects.all():
         list.append(user)
     context['allInsurance'] = list
 
     list = []
-    for user in Documents().objects.all():
+    for user in Documents.objects.all():
         list.append(user)
     context['allDocs'] = list
 
-    print(context)
+    list = []
+    for doc in Documents.objects.filter(owner=request.user.username):
+        slash = doc.file.name.rfind('/')
+        fn = doc.file.name[slash+1:]
+        jsonDec = json.decoder.JSONDecoder()
+        print(doc.sharedWith)
+        sharedWith = []
+        if(doc.sharedWith is not None):
+            sharedWith = jsonDec.decode(doc.sharedWith)
+
+        # print(type(sharedWith[0]))
+        intShared = []
+        for d in sharedWith:
+            intShared.append(int(d))
+        # print(type(intShared[0]))
+        tuple = (fn,doc,doc.type,doc.id,intShared)
+        list.append(tuple)
+    context['myDocs'] = list
+
+    # print(context)
     return context
 
 
-################
-# def patientShare(request):
+###############
+def patientShare(request):
 
-    # context = {
-    #         'loggedinPatient' : 'NULL',
-    #         'allUsers' : 'NULL',
-    #         'allDoctors' : 'NULL', 
-    #         'allPatients' : 'NULL', 
-    #         'allHospital' : 'NULL',
-    #         'allPharmacy' : 'NULL',
-    #         'allInsurance' : 'NULL',
-    #         'allDocs' : 'NULL'
-    #     }
-    # context = getLoggedinPatient(request,context)
-    # context = fillContext(context)
-    # if request.user.is_anonymous or context['loggedinPatient']=='NULL':
-    #     return redirect("/login")
-    
-    # if(request.method=="POST"):
-    #     #we got some users to add in share with of given doc
+    context = {
+            'loggedinPatient' : 'NULL',
+            'allUsers' : 'NULL',
+            'allDoctors' : 'NULL', 
+            'allPatients' : 'NULL', 
+            'allHospital' : 'NULL',
+            'allPharmacy' : 'NULL',
+            'allInsurance' : 'NULL',
+            'allDocs' : 'NULL',
+            'myDocs' : 'NULL'
+        }
+    context = getLoggedinPatient(request,context)
+    context = fillContext(request,context)
+    if request.user.is_anonymous or context['loggedinPatient']=='NULL':
+        return redirect("/login")
+    print(len(request.GET))
+    if(request.method=="GET" and len(request.GET)>1):
+        #we got some users to add in share with of given doc
+        share = (request.GET)
+        # print(share)
+        di = dict(share)
+        if len(request.GET)<3:
+            sharedwith = []
+        else:
+            sharedwith = di['doctor']
+        docId = di['documentID'][0]
+        # print(docId)
+        document = Documents.objects.get(id=docId)
+        
+        # print(type(sharedwith),sharedwith)
+        
+        jsonDec = json.decoder.JSONDecoder()
+        sharedWithORG = []
+        if(document.sharedWith is not None):
+            sharedWithORG = jsonDec.decode(document.sharedWith)
+        
+        for rem in Doctor.objects.all():
+            print(rem,"+++++++",sharedwith)
+            if str(rem.mobile) not in sharedwith and str(rem.mobile) in sharedWithORG:
+                print("remo",rem)
+                sharedWithORG.remove(str(rem.mobile))
+        
+        for i in sharedWithORG:
+            sharedwith.append(i)
+        sharedwith=[*set(sharedwith)]
+        # sharedwith = sharedwith.extend(sharedWithORG)
+        document.sharedWith = json.dumps(sharedwith)
+        document.save()
+    context = getLoggedinPatient(request,context)
+    context = fillContext(request,context)
 
+    return render(request, 'patientShare.html', context)
 
+def patientShare2(request):
 
+    context = {
+            'loggedinPatient' : 'NULL',
+            'allUsers' : 'NULL',
+            'allDoctors' : 'NULL', 
+            'allPatients' : 'NULL', 
+            'allHospital' : 'NULL',
+            'allPharmacy' : 'NULL',
+            'allInsurance' : 'NULL',
+            'allDocs' : 'NULL',
+            'myDocs' : 'NULL'
+        }
+    context = getLoggedinPatient(request,context)
+    context = fillContext(request,context)
+    if request.user.is_anonymous or context['loggedinPatient']=='NULL':
+        return redirect("/login")
+    print(len(request.GET))
+    if(request.method=="GET" and len(request.GET)>1):
+        #we got some users to add in share with of given doc
+        share = (request.GET)
+        # print(share)
+        di = dict(share)
+        if len(request.GET)<3:
+            sharedwith = []
+        else:
+            sharedwith = di['pharma']
+        docId = di['documentID'][0]
+        # print(docId)
+        document = Documents.objects.get(id=docId)
+        
+        # print(type(sharedwith),sharedwith)
+        
+        jsonDec = json.decoder.JSONDecoder()
+        sharedWithORG = []
+        if(document.sharedWith is not None):
+            sharedWithORG = jsonDec.decode(document.sharedWith)
+        
+        for rem in Pharmacy.objects.all():
+            print(rem,"+++++++",sharedwith)
+            if str(rem.mobile) not in sharedwith and str(rem.mobile) in sharedWithORG:
+                print("remo",rem)
+                sharedWithORG.remove(str(rem.mobile))
+        
+        for i in sharedWithORG:
+            sharedwith.append(i)
+        sharedwith=[*set(sharedwith)]
+        # sharedwith = sharedwith.extend(sharedWithORG)
+        document.sharedWith = json.dumps(sharedwith)
+        document.save()
+    context = getLoggedinPatient(request,context)
+    context = fillContext(request,context)
 
-    # return render(request, 'patientShare.html', context)
+    return render(request, 'patientShare2.html', context)
+
