@@ -65,7 +65,7 @@ def loginUser(request):
             if user.is_superuser == 1:
                 return redirect("/adminPage")
             else:
-                #otp = sendOTP(username)
+                otp = sendOTP(username)
 
                 #
                 type=userType(user)
@@ -79,7 +79,7 @@ def loginUser(request):
                 if(type=="pharmacy" and not Pharmacy.objects.get(mobile=user.username).verified):
                     messages.warning(request, 'Profile yet to be verified by admin, contact admin at ritick20460@iiitd.ac.in')
                     return redirect("/login")
-                otp = 123456
+                # otp = 123456
                 #
 
                 # print(user)
@@ -349,10 +349,10 @@ def phoneNumber(request):
             return redirect('phoneNumber')
         else:
             print("Entered phone no is",phone)
-            # otp = sendOTP(phone)
+            otp = sendOTP(phone)
 
             #
-            otp = 123456
+            # otp = 123456
             #
 
             print('sent otp is ',otp)
@@ -380,10 +380,10 @@ def phoneNumberDoctor(request):
             return redirect('phoneNumberDoctor')
         else:
             print("Entered phone no is",phone)
-            # otp = sendOTP(phone)
+            otp = sendOTP(phone)
 
             #
-            otp = 123456
+            # otp = 123456
             #
 
             print('sent otp is GOING TO DOCTOR OTP',otp)
@@ -411,10 +411,10 @@ def phoneNumberOrg(request):
             return redirect('phoneNumberOrg')
         else:
             print("Entered phone no is",phone)
-            # otp = sendOTP(phone)
+            otp = sendOTP(phone)
 
             #
-            otp = 123456
+            # otp = 123456
             #
 
             print('sent otp is GOING TO DOCTOR OTP',otp)
@@ -438,7 +438,7 @@ def patientOtp(request):
             otp = request.POST.get('otp')
             realOtp = request.POST.get('realOtp')
             #
-            realOtp = otp
+            # realOtp = otp
             #
             print(realOtp)
             print(otp)
@@ -464,7 +464,7 @@ def doctorOtp(request):
             otp = request.POST.get('otp')
             realOtp = request.POST.get('realOtp')
             #
-            realOtp = otp
+            # realOtp = otp
             #
             print(realOtp)
             print(otp)
@@ -490,7 +490,7 @@ def orgOtp(request):
             otp = request.POST.get('otp')
             realOtp = request.POST.get('realOtp')
             #
-            realOtp = otp
+            # realOtp = otp
             #
             print(realOtp)
             print(otp)
@@ -895,7 +895,7 @@ def otpVerif(request):
             otp = request.POST.get('otp')
             realOtp = request.POST.get('realOtp')
             #
-            realOtp = otp
+            # realOtp = otp
             #
             print(realOtp)
             print(otp)
