@@ -33,5 +33,9 @@ urlpatterns = [
     path("chooseOrg", views.chooseOrg, name="chooseOrg"),
     path("patientShare", views.patientShare, name="patientShare"),
     path("patientShare2", views.patientShare2, name="patientShare2"),
-
+    path("buyMeds", views.buyMeds, name="buyMeds"),
+    path("choosePharmacy", views.choosePharmacy, name="choosePharmacy"),
+    path("chooseMeds", views.chooseMeds, name="chooseMeds"),
+    path("razorpay", views.razorpay, name="razorpay"),
+    path("paymenthandler", views.paymenthandler, name="paymenthandler")
 ]

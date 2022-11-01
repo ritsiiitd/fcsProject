@@ -1,8 +1,13 @@
 from datetime import datetime
+# from http import client
 import json
 from nis import cat
 from operator import indexOf
 import re
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponseBadRequest
+from requests import request
+import razorpay
 from xml.dom.minidom import Document
 from django.shortcuts import redirect, render
 from django.contrib.auth.models import User
@@ -48,7 +53,8 @@ def userType(user):
     if user.username in phar:
         return "pharmacy"
 def loginUser(request):
-    if request.method=="POST":
+
+    if request.method=="POST" and request.POST.get('username') is not None and request.POST.get('password') is not None:
         #check credentials
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -84,6 +90,7 @@ def loginUser(request):
 
                 # return redirect("/mainpage")
         else:
+            messages.warning(request, 'Invalid credentials, please sign up')
             return render(request, 'login.html')
     return render(request, 'login.html')
 
@@ -1064,9 +1071,10 @@ def patientShare(request):
         # sharedwith = sharedwith.extend(sharedWithORG)
         document.sharedWith = json.dumps(sharedwith)
         document.save()
+        messages.success(request, 'Shared!!')
     context = getLoggedinPatient(request,context)
     context = fillContext(request,context)
-
+   
     return render(request, 'patientShare.html', context)
 
 def patientShare2(request):
@@ -1119,8 +1127,114 @@ def patientShare2(request):
         # sharedwith = sharedwith.extend(sharedWithORG)
         document.sharedWith = json.dumps(sharedwith)
         document.save()
+        messages.success(request, 'Shared!!')
     context = getLoggedinPatient(request,context)
     context = fillContext(request,context)
-
+    
     return render(request, 'patientShare2.html', context)
 
+def buyMeds(request):
+    return render(request,"choosePharmacy.html",{"allPharmacy":Pharmacy.objects.all()})
+
+def choosePharmacy(request):
+    if(request.method=="POST"):
+        phone = request.POST.get('phone')
+        pharmacy = Pharmacy.objects.get(mobile=int(phone))
+        jsonDec = json.decoder.JSONDecoder()
+        meds = []
+        if(pharmacy.medicineList is not None):
+
+            meds = jsonDec.decode(pharmacy.medicineList)
+        med_price = []
+        for m in meds:
+            both =  m.split(',')
+            both[1] = both[1][4:]
+            med_price.append(both)
+            print(med_price)
+        return render(request,"chooseMeds.html",{'pharmacy':pharmacy,'med_price':med_price})
+    return render(request,"choosePharmacy.html",{"allPharmacy":Pharmacy.objects.all()})
+
+razorpay_client = razorpay.Client(auth=("rzp_test_IsrxZBkSBR9sDD", "stJEcY9Fy6dKy3RUpTTPD8s8"))
+
+def chooseMeds(request):
+    # if(request.method=="POST"):
+    if(request.method=="POST"):
+        price = request.POST.get('price')
+        print(price)
+        currency = 'INR'
+        amount = 20000  # Rs. 200
+    
+        # Create a Razorpay Order
+        razorpay_order = razorpay_client.order.create(dict(amount=amount,
+                                                        currency=currency,
+                                                        payment_capture='0'))
+    
+        # order id of newly created order.
+        razorpay_order_id = razorpay_order['id']
+        callback_url = 'paymenthandler'
+    
+        # we need to pass these details to frontend.
+        context = {}
+        context['order_id'] = razorpay_order_id
+        context['key'] = 'rzp_test_IsrxZBkSBR9sDD'
+        context['amount'] = amount
+        context['currency'] = currency
+        context['callback_url'] = callback_url
+        print(razorpay_order_id)
+        return render(request, 'razorpay.html', context=context)
+        return render(request,"razorpay.html")
+    return render(request,"chooseMeds.html")
+
+def razorpay(request):
+    
+    print("I was here")
+    return render(request, 'razorpay.html')
+
+
+@csrf_exempt
+def paymenthandler(request):
+    print("payment was done??")
+    # only accept POST request.
+    if request.method == "POST":
+        try:
+            # print(request.POST)
+            # get the required parameters from post request.
+            payment_id = request.POST.get('razorpay_payment_id', '')
+            razorpay_order_id = request.POST.get('razorpay_order_id', '')
+            signature = request.POST.get('razorpay_signature', '')
+            params_dict = {
+                'razorpay_order_id': razorpay_order_id,
+                'razorpay_payment_id': payment_id,
+                'razorpay_signature': signature
+            }
+            print(params_dict)
+            # verify the payment signature.
+            result = razorpay_client.utility.verify_payment_signature(params_dict)
+            if result is not None:
+                amount = 20000  # Rs. 200
+                try:
+ 
+                    # capture the payemt
+                    print("payment? captured?")
+                    razorpay_client.payment.capture(payment_id, amount)
+                    
+ 
+                    # render success page on successful caputre of payment
+                    return render(request, 'paitentDashboard.html')
+                except:
+ 
+                    # if there is an error while capturing payment.
+                    print("payment? fail?")
+                    return render(request, 'paymentfail.html')
+            else:
+ 
+                # if signature verification fails.
+                print("payment? fail? not POST")
+                return render(request, 'paymentfail.html')
+        except:
+ 
+            # if we don't find the required parameters in POST data
+            return HttpResponseBadRequest()
+    else:
+       # if other than POST request is made.
+        return HttpResponseBadRequest()
