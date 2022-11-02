@@ -1156,6 +1156,9 @@ def choosePharmacy(request):
 
 razorpay_client = razorpay.Client(auth=("rzp_test_IsrxZBkSBR9sDD", "stJEcY9Fy6dKy3RUpTTPD8s8"))
 
+# CREDITS = https://www.geeksforgeeks.org/razorpay-integration-in-django/
+
+
 def chooseMeds(request):
     # if(request.method=="POST"):
     if(request.method=="POST"):
